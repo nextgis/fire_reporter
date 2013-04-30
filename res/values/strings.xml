@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">FireReporter</string>
+  <string name="sPlace">Mark place</string>
+  <string name="sRefresh">Refresh</string>
+  <!-- tabs names-->
+  <string name="tabSend">Send</string>
+  <string name="tabView">View</string>
+  <string name="tabSettings">Settings</string>
+  <string name="tabAbout">About</string>
+
+  <!-- send tab -->
+  <string name="sLatitude">Latitude</string>
+  <string name="sLongitude">Longitude</string>
+  <string name="sAzimuth">Azimuth</string>
+  <string name="sLock">Lock position</string>
+  <string name="sUnLock">Unlock position</string>
+  <string name="sDistance">Distance, m</string>
+  <string name="sComment">Comment</string>
+  <string name="sSend">Send report</string>
+
+  <!-- view tab -->
+  <string name="sSearch">Search</string>
+  <string name="sRows">Rows: </string>
+
+  <!-- settings tab -->
+  <string name="sGeneral">General settings</string>
+  <string name="sDatabase">Database settings</string>
+  <string name="sSave">Save</string>
+  <string name="stNasaServer">MOD14 server settings</string>
+  <string name="stUserServer">User fires server settings</string>
+  <string name="stScanexServer">Scanex server settings</string>
+  
+  <!-- settings general -->
+  <string name="sInterval">If failed, try to send data every, min</string>
+  <string name="sRowsCount">Number of rows to fetch from fires database</string>
+  <string name="sDaysBeforeSearchDate">Day interval to fetch rows</string>
+  <string name="sRadiusGetFires">Radius in km to get fires</string>
+  <string name="sSearchDate">Search by current date</string>
+  <string name="sSendDataInSuspend">Send data in suspend</string>
+  <string name="sSendDataInSuspendOn">Send data in suspend</string>
+  <string name="sSendDataInSuspendOff">Don\'t send data in suspend</string>	
+  
+  <!-- settings db -->
+  <string name="sServer">Server</string>
+  <string name="sServerSummary">Database server</string>
+  <string name="sPort">Port</string>
+  <string name="sPortSummary">Database port</string>
+  <string name="sDBase">Database</string>
+  <string name="sDBaseSummary">Database name</string>
+  <string name="sUser">User</string>
+  <string name="sUserSummary">Database login</string>
+  <string name="sPassword">Password</string>
+  <string name="sPasswordSummary">Database password</string>
+  <string name="sSSL">Use SSL</string>
+  <string name="sSSLSummary">Use Secure Sockets Layer</string>
+  <string name="sCheckDBConn">Check DB connection</string>
+  <string name="sCheckDBConnSummary">Click to check DB connection</string>
+  <string name="stSearchCurrentDayOn">Get fires for current date</string>
+  <string name="stSearchCurrentDayOff">Get fires for all dates</string>
+  <string name="stConnectionSucceeded">Connection succeeded</string>
+  
+  <!-- about tab -->
+  <string name="sHomepage">http://gis-lab.info/qa/firereporter.html</string>
+  <string name="sAbout">Applicaion for sending reports about fires and viewing nearest fires for current user location.\n\nDevelopers:\n  Alexander Bruy\n  Maxim Dubinin\n\nMore info at</string>
+
+  <!-- application strings -->
+  <string name="noNetwork">Network not available</string>
+  <string name="saved">Saved successfully</string>
+
+  <string name="noLocation">No location info</string>
+  <string name="noGPS">GPS provider not available</string>
+  <string name="noCompass">Compass sensor not available</string>
+  <string name="reportStored">Report stored for delivery</string>
+  <string name="reportSend">Report send</string>
+  <string name="reportStoredFailed">Report stored failed</string>
+  
+  <string name="confirmSend">There are no coordinates yet.Proceed?</string>
+  <string name="yes">Yes</string>
+  <string name="no">No</string>
+  
+  <!-- progress dialog -->
+  <string name="stDownLoading">Downloading...</string>
+  <string name="stChecking">Ckecking...</string>
+  <string name="stNetworkUnreach">Network is not available</string>
+    
+  <!-- compass -->
+
+	<string name="compas_N">N</string>
+	<string name="compas_NE">NE</string>
+	<string name="compas_E">E</string>
+	<string name="compas_SE">SE</string>
+	<string name="compas_S">S</string>
+	<string name="compas_SW">SW</string>
+	<string name="compas_W">W</string>
+	<string name="compas_NW">NW</string>
+	<string name="coord_lat"></string>
+	<string name="coord_lon"></string>
+	
+	<!-- defaults -->
+	<string name="stDefaultServer">http://gis-lab.info/data/zp-gis/soft/fires.php</string>
+	
+</resources>

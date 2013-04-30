@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	style="@style/FillParent">	
+	
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >    
+
+    <TableLayout
+        android:id="@+id/reportinfo"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="1">
+        <TableRow>
+            <TextView
+                android:id="@+id/lblLatitude"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sLatitude"/>
+            <EditText
+                android:id="@+id/edLatitude"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:editable="false"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:inputType="number|numberSigned|numberDecimal"/>
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:id="@+id/lblLongitude"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sLongitude"/>
+            <EditText
+                android:id="@+id/edLongitude"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:editable="false"
+                android:focusable="false"
+                android:cursorVisible="false"
+                android:inputType="number|numberSigned|numberDecimal"/>
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:id="@+id/lblDistance"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sDistance"/>
+            <EditText
+                android:id="@+id/edDistance"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:inputType="number|numberDecimal"/>
+        </TableRow>
+        <TableRow>
+            <TextView
+                android:id="@+id/lblAzimuth"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sAzimuth"/>
+            <EditText
+                android:id="@+id/edAzimuth"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:editable="false"
+                android:focusable="false"
+                android:cursorVisible="false"/>
+        </TableRow>        
+    </TableLayout>
+    <fragment
+        android:id="@+id/compass_fragment"
+        android:name="com.nextgis.firereporter.CompassFragment"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content" />   
+    <TextView
+        android:id="@+id/lblComment"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sComment"/>
+    <EditText
+        android:id="@+id/edComment"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text|textMultiLine"
+        android:minLines="2"
+        android:gravity="top"
+        android:maxLength="500"/>
+    
+    </LinearLayout>
+    
+</FrameLayout>

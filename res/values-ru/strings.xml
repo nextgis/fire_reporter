@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">FireReporter</string>
+  <string name="sPlace">Отметить</string>
+  <string name="sRefresh">Обновть</string> 
+  <!-- tabs names-->
+  <string name="tabSend">Отчет</string>
+  <string name="tabView">Просмотр</string>
+  <string name="tabSettings">Настройки</string>
+  <string name="tabAbout">Инфо</string>
+
+  <!-- send tab -->
+  <string name="sLatitude">Широта</string>
+  <string name="sLongitude">Долгота</string>
+  <string name="sAzimuth">Азимут</string>
+  <string name="sLock">Заблокировать</string>
+  <string name="sUnLock">Разблокировать</string>
+  <string name="sDistance">Расстояние, м</string>
+  <string name="sComment">Комментарий</string>
+  <string name="sSend">Отправить</string>
+
+  <!-- view tab -->
+  <string name="sSearch">Найти</string>
+  <string name="sRows">Записей: </string>
+
+  <!-- settings tab -->
+  <string name="sGeneral">Общие настройки</string>
+  <string name="sDatabase">Настройки баз данных</string>
+  <string name="sSave">Сохранить</string>
+  <string name="stNasaServer">Установки сервера данных MOD14</string>
+  <string name="stUserServer">Установки сервера данных о пожарах от пользователей</string>
+  <string name="stScanexServer">Установки сервера Scanex</string>
+  
+  <!-- settings general -->
+  <string name="sInterval">При сбое повторять отправку каждые, минут</string>
+  <string name="sRowsCount">Число запрашиваемых записей</string>
+  <string name="sDaysBeforeSearchDate">Интервал в днях для получения записей</string>
+  <string name="sSearchDate">Искать по текущей дате</string>
+  <string name="sRadiusGetFires">Радиус в км для получения пожаров</string>
+  <string name="sSendDataInSuspend">Включать устройство для отправки данных</string>
+  <string name="sSendDataInSuspendOn">Включать устройство для отправки данных</string>
+  <string name="sSendDataInSuspendOff">Не включать устройство для отправки данных</string>	  
+
+  <!-- settings db -->
+  <string name="sServer">Сервер</string>
+  <string name="sPort">Порт</string>
+  <string name="sDBase">База данных</string>
+  <string name="sUser">Логин</string>
+  <string name="sPassword">Пароль</string>
+  <string name="sSSL">Использовать SSL</string>
+  <string name="sServerSummary">Сервер базы данных</string>
+  <string name="sPortSummary">Порт базы данных</string>
+  <string name="sDBaseSummary">Имя базы данных</string>
+  <string name="sUserSummary">Логин входа в базу данных</string>
+  <string name="sPasswordSummary">Пароль базы данных</string>
+  <string name="sSSLSummary">Использовать шифрование SSL</string>  
+  <string name="sCheckDBConn">Проверка подключения к БД</string>
+  <string name="sCheckDBConnSummary">Нажмите, что бы проверить подключение к БД</string>
+  <string name="stSearchCurrentDayOn">Получить пожары за текущую дату</string>
+  <string name="stSearchCurrentDayOff">Получить пожары за все даты</string>
+  <string name="stConnectionSucceeded">Подключение удалось</string>
+  
+  <!-- about tab -->
+  <string name="sHomepage">http://gis-lab.info/qa/firereporter.html</string>
+  <string name="sAbout">Приложение для отправки сообщений о пожарах и просмотра ближайших к пользователю пожаров.\n\nРазработчики:\n  Александр Бруй\n  Максим Дубинин\n\nБольше информации по ссылке</string>
+
+  <!-- application strings -->
+  <string name="noNetwork">Сеть не доступна</string>
+  <string name="saved">Сохранено</string>
+
+  <string name="noLocation">Нет данных</string>
+  <string name="noGPS">GPS недоступен</string>
+  <string name="noCompass">Компас недоступен</string>
+  <string name="reportStored">Отчет сохранен для дальнейшей отправки</string>
+  <string name="reportSend">Отчет успешно отправлен</string>
+  <string name="reportStoredFailed">Не удалось создать запись для отправки отчета</string>
+
+  <string name="confirmSend">Координаты не заданы. Продолжить?</string>
+  <string name="yes">Да</string>
+  <string name="no">Нет</string>
+  
+  <!-- progress dialog -->
+  <string name="stDownLoading">Загрузка...</string>
+  <string name="stChecking">Проверка...</string>  
+  <string name="stNetworkUnreach">Сеть недотупна</string>
+    
+  <!-- compas -->
+
+	<string name="compas_N">С</string>
+	<string name="compas_NE">СВ</string>
+	<string name="compas_E">В</string>
+	<string name="compas_SE">ЮВ</string>
+	<string name="compas_S">Ю</string>
+	<string name="compas_SW">ЮЗ</string>
+	<string name="compas_W">З</string>
+	<string name="compas_NW">СЗ</string>
+	<string name="coord_lat">Ш</string>
+	<string name="coord_lon">Д</string>
+</resources>

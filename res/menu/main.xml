@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <menu xmlns:android="http://schemas.android.com/apk/res/android">
+        <item
+		 android:id="@+id/settings"
+		 android:icon="@drawable/ic_action_settings"
+		 android:showAsAction="never"
+		 android:title="@string/tabSettings">
+		</item>
+		<item
+		 android:id="@+id/about"
+		 android:icon="@drawable/ic_action_about"
+		 android:showAsAction="never"
+		 android:title="@string/tabAbout">
+		</item>
+		<item
+		 android:id="@+id/place"
+		 android:icon="@drawable/ic_location_place"
+		 android:showAsAction="ifRoom"
+		 android:title="@string/sPlace">
+		</item>	
+		<item
+		 android:id="@+id/refresh"
+		 android:icon="@drawable/ic_navigation_refresh"
+		 android:showAsAction="ifRoom"
+		 android:title="@string/sRefresh">
+		</item>	
+    </menu>

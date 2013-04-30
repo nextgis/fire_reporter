@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+* FireReporter
+* ==========================================================================
+* Report and view fires
+*
+* Copyright (C) 2013 NextGIS (http://nextgis.ru)
+*
+* This source is free software; you can redistribute it and/or modify it under
+* the terms of the GNU General Public License as published by the Free
+* Software Foundation; either version 2 of the License, or (at your option)
+* any later version.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT ANY
+* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+* details.
+*
+* A copy of the GNU General Public License is available on the World Wide Web
+* at <http://www.gnu.org/copyleft/gpl.html>. You can also obtain it by writing
+* to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+* MA 02111-1307, USA.
+-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/tabSettings" >
+	<PreferenceCategory
+		android:title="@string/sGeneral">
+		<ListPreference
+		    android:key="interval"
+		    android:title="@string/sInterval"
+			android:defaultValue="5 min"
+			android:entries="@array/interval_updates"
+			android:entryValues="@array/interval_updates"
+			android:dialogTitle="@string/sInterval" />	
+		<CheckBoxPreference
+		    android:key="send_data_in_suspend"
+			android:title="@string/sSendDataInSuspend"
+			android:defaultValue="false"			
+			android:summary="@string/sSendDataInSuspend" />			
+		<EditTextPreference
+		    android:key="row_count"
+		    android:title="@string/sRowsCount"
+		    android:defaultValue="60"
+		    android:dialogTitle="@string/sRowsCount"
+		    android:inputType="number" />
+		<CheckBoxPreference
+		    android:key="search_current_date"
+			android:title="@string/sSearchDate"
+			android:defaultValue="true"			
+			android:summary="@string/sSearchDate" />
+		<EditTextPreference
+		    android:key="days_before_current"
+		    android:title="@string/sDaysBeforeSearchDate"
+		    android:defaultValue="5"
+		    android:dialogTitle="@string/sDaysBeforeSearchDate"
+		    android:inputType="number" />	
+		<EditTextPreference
+		    android:key="fire_search_radius"
+		    android:title="@string/sRadiusGetFires"
+		    android:defaultValue="5"
+		    android:dialogTitle="@string/sRadiusGetFires"
+		    android:inputType="number" />		    
+	</PreferenceCategory>
+	<PreferenceCategory
+		android:title="@string/stNasaServer">
+		<EditTextPreference
+		    android:key="mod14_server"
+		    android:title="@string/sServer"
+		    android:summary="@string/sServerSummary"
+		    android:defaultValue="@string/stDefaultServer"
+		    android:dialogTitle="@string/sServerSummary" />		 		
+		<EditTextPreference
+		    android:key="mod14_user"
+		    android:title="@string/sUser"
+		    android:summary="@string/sUserSummary"
+		    android:defaultValue="fire_usr"
+		    android:dialogTitle="@string/sUserSummary" />		
+		<EditTextPreference
+		    android:key="mod14_password"
+		    android:title="@string/sPassword"
+		    android:summary="@string/sPasswordSummary"
+		    android:defaultValue="J59DY"
+		    android:dialogTitle="@string/sPasswordSummary" 
+		    android:inputType="textPassword"/>			    	    	
+		<Preference android:title="@string/sCheckDBConn"
+                android:key="check_mod14_connection"
+                android:summary="@string/sCheckDBConnSummary"/>				
+	</PreferenceCategory>
+	<PreferenceCategory
+		android:title="@string/stUserServer">
+		<EditTextPreference
+		    android:key="user_server"
+		    android:title="@string/sServer"
+		    android:summary="@string/sServerSummary"
+		    android:defaultValue="@string/stDefaultServer"
+		    android:dialogTitle="@string/sServerSummary" />		 		
+		<EditTextPreference
+		    android:key="user_user"
+		    android:title="@string/sUser"
+		    android:summary="@string/sUserSummary"
+		    android:defaultValue="firereporter"
+		    android:dialogTitle="@string/sUserSummary" />		
+		<EditTextPreference
+		    android:key="user_password"
+		    android:title="@string/sPassword"
+		    android:summary="@string/sPasswordSummary"
+		    android:defaultValue="8QdA4"
+		    android:dialogTitle="@string/sPasswordSummary" 
+		    android:inputType="textPassword"/>			    	    	
+		<Preference android:title="@string/sCheckDBConn"
+                android:key="check_user_connection"
+                android:summary="@string/sCheckDBConnSummary"/>				
+	</PreferenceCategory>
+	<PreferenceCategory
+		android:title="@string/stScanexServer">
+		<EditTextPreference
+		    android:key="scanex_user"
+		    android:title="@string/sUser"
+		    android:summary="@string/sUserSummary"
+		    android:defaultValue="new@kosmosnimki.ru"
+		    android:dialogTitle="@string/sUserSummary" />		
+		<EditTextPreference
+		    android:key="scanex_password"
+		    android:title="@string/sPassword"
+		    android:summary="@string/sPasswordSummary"
+		    android:defaultValue="test123"
+		    android:dialogTitle="@string/sPasswordSummary" 
+		    android:inputType="textPassword"/>			    	    	
+		<Preference android:title="@string/sCheckDBConn"
+                android:key="check_scanex_connection"
+                android:summary="@string/sCheckDBConnSummary"/>				
+	</PreferenceCategory>	
+</PreferenceScreen>
