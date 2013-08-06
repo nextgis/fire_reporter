@@ -96,4 +96,10 @@
 	<string name="compas_NW">СЗ</string>
 	<string name="coord_lat">Ш</string>
 	<string name="coord_lon">Д</string>
+	
+	<string name="sNetworkUnreach">Сеть недотупна</string>
+	
+	<!-- defaults -->
+	<string name="stDefaultServer">http://gis-lab.info/data/zp-gis/soft/fires.php</string>
+		
 </resources>

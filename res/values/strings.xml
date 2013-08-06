@@ -97,7 +97,9 @@
 	<string name="coord_lat"></string>
 	<string name="coord_lon"></string>
 	
+	<string name="sNetworkUnreach">The network unreacheable</string>
+		
 	<!-- defaults -->
 	<string name="stDefaultServer">http://gis-lab.info/data/zp-gis/soft/fires.php</string>
-	
+		
 </resources>
