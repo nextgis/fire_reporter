@@ -26,18 +26,14 @@ package com.nextgis.firereporter;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import com.nextgis.firereporter.R;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -51,11 +47,11 @@ import android.widget.TextView;
 
 public class FireListAdapter extends BaseAdapter {
 	private Context mContext;
-	private ArrayList <FireItem> mListFireInfo;
+	private List <FireItem> mListFireInfo;
 	
-	public FireListAdapter(Context c, ArrayList <FireItem> list) {
+	public FireListAdapter(Context c, List<FireItem> mFireList) {
 		mContext = c;
-		mListFireInfo = list;
+		mListFireInfo = mFireList;
 	}
 	
 

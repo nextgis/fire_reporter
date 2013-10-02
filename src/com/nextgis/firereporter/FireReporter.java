@@ -32,13 +32,11 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.List;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import android.app.ActionBar;
-import android.app.ActionBar.OnNavigationListener;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -50,9 +48,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -61,13 +58,26 @@ import android.widget.ListView;
 import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
+import com.actionbarsherlock.app.ActionBar;
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
 import com.nextgis.firereporter.FireListAdapter.FireItem;
 import com.nextgis.firereporter.R;
 
-public class FireReporter extends Activity {
-    public static final String PREFERENCES = "FireReporter";
+public class FireReporter extends SherlockActivity implements OnNavigationListener{
+    public final static String PREFERENCES = "FireReporter";
+    
+	public final static int MENU_REPORT = 1;
+	public final static int MENU_PLACE = 2;
+	public final static int MENU_REFRESH = 3;
+	public final static int MENU_SETTINGS = 4;
+	public final static int MENU_ABOUT = 5;
+	
+	
     private ListView mListFireInfo;
-    private ArrayList <FireItem> mFireList = new ArrayList<FireItem>();
+    private List <FireItem> mFireList;
     private int mPosition;
     protected FireListAdapter mListAdapter;
     private Handler mFillDataHandler; 
@@ -77,6 +87,8 @@ public class FireReporter extends Activity {
 	@Override
 	  public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
+	    
+	    mFireList = new ArrayList<FireItem>();
 	    
         // initialize the default settings
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -107,28 +119,14 @@ public class FireReporter extends Activity {
             };
         };	    
 	    
-	    OnNavigationListener mOnNavigationListener = new OnNavigationListener() {
-	    	  // Get the same strings provided for the drop-down's ArrayAdapter
-	    	  //String[] strings = getResources().getStringArray(R.array.fires_src);
-
-	    	  public boolean onNavigationItemSelected(int position, long itemId) {
-	    		  
-	      		Editor editor = PreferenceManager.getDefaultSharedPreferences(FireReporter.this).edit();
-	    		editor.putInt("CURRENT_VIEW", position);
-	    		editor.commit();
-	    		
-	    		mPosition = position;
-	    		bGotData = false;
-	    		GetData(true);
-
-	    	    return true;
-	    	  }
-	    };
-	    SpinnerAdapter mSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.fires_src, android.R.layout.simple_spinner_dropdown_item);	    
+	       
+	    ActionBar actionBar = getSupportActionBar();
 	    
-	    ActionBar actionBar = getActionBar();
-	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
-	    actionBar.setListNavigationCallbacks(mSpinnerAdapter, mOnNavigationListener);
+	    SpinnerAdapter mSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.fires_src, android.R.layout.simple_spinner_dropdown_item);	    
+	    actionBar.setDisplayShowTitleEnabled(false);
+	    actionBar.setNavigationMode(com.actionbarsherlock.app.ActionBar.NAVIGATION_MODE_LIST);
+	    actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);
+	    
 
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(FireReporter.this);
         mPosition = prefs.getInt("CURRENT_VIEW", 0);
@@ -151,7 +149,7 @@ public class FireReporter extends Activity {
         		FireItem item = (FireItem)appFireListAdapter.getItem(pos);
         		// launch the selected application
         		String sURL = item.GetUrl();
-        		if(!sURL.isEmpty()){
+        		if(sURL.length() > 0){
         			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(sURL));
         			startActivity(browserIntent);
         		}
@@ -165,8 +163,25 @@ public class FireReporter extends Activity {
 
 	  @Override
 	  public boolean onCreateOptionsMenu(Menu menu) {
-	    getMenuInflater().inflate(R.menu.main, menu);
-	    return true;
+	    
+			menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_SETTINGS, com.actionbarsherlock.view.Menu.NONE, R.string.tabSettings)
+	       .setIcon(R.drawable.ic_action_settings)
+	       .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
+			
+			menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_ABOUT, com.actionbarsherlock.view.Menu.NONE, R.string.tabAbout)
+			.setIcon(R.drawable.ic_action_about)
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
+			
+			menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_PLACE, com.actionbarsherlock.view.Menu.NONE, R.string.sPlace)
+			.setIcon(R.drawable.ic_location_place)
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			
+			menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_REFRESH, com.actionbarsherlock.view.Menu.NONE, R.string.sRefresh)
+			.setIcon(R.drawable.ic_navigation_refresh)
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			
+			return true;
+	    
 	  }
 
 	@Override
@@ -178,23 +193,23 @@ public class FireReporter extends Activity {
 	            intentMain.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 	            startActivity(intentMain);
 	            return true;
-	        case R.id.settings:
+	        case MENU_SETTINGS:
 	            // app icon in action bar clicked; go home
 	            Intent intentSet = new Intent(this, SettingsMain.class);
 	            intentSet.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentSet);
 	            return true;
-	        case R.id.about:
+	        case MENU_ABOUT:
 	            // app icon in action bar clicked; go home
 	            Intent intentAbout = new Intent(this, AboutReporter.class);
 	            intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentAbout);
 	            return true;	  
-	        case R.id.refresh:
+	        case MENU_REFRESH:
 	        	bGotData = false;
 	        	GetData(true);
 	        	return true;
-	        case R.id.place:
+	        case MENU_PLACE:
 	            Intent intentSendReport = new Intent(this, SendReport.class);
 	            intentSendReport.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentSendReport);
@@ -266,10 +281,11 @@ public class FireReporter extends Activity {
         if(searchByDate){
         	sFullURL += "&date=" + dt;
         }
-        if(!sLat.isEmpty() && !sLon.isEmpty()){
+        if(sLat.length() > 0 && sLon.length() > 0){
         	sFullURL += "&lat=" + sLat + "&lon=" + sLon;        	
         }
 
+        //SELECT * FROM (SELECT id, report_date, latitude, longitude, round(ST_Distance_Sphere(ST_PointFromText('POINT(37.506247479468584 55.536129316315055)', 4326), fires.geom)) AS dist FROM fires WHERE ST_Intersects(fires.geom, ST_GeomFromText('POLYGON((32.5062474795 60.5361293163, 42.5062474795 60.5361293163, 42.5062474795 50.5361293163, 32.5062474795 50.5361293163, 32.5062474795 60.5361293163))', 4326) ) AND CAST(report_date as date) >= '2013-09-27')t WHERE dist <= 5000 LIMIT 15
 	    //String sRemoteData = "http://gis-lab.info/data/zp-gis/soft/fires.php?function=get_rows_nasa&user=fire_usr&pass=J59DY&limit=5";
         oUser = new HttpGetter(FireReporter.this, 1, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress);
        	oUser.execute(sFullURL);
@@ -312,7 +328,7 @@ public class FireReporter extends Activity {
         if(searchByDate){
         	sFullURL += "&date=" + dt;
         }
-        if(!sLat.isEmpty() && !sLon.isEmpty()){
+        if(sLat.length() > 0 && sLon.length() > 0){
         	sFullURL += "&lat=" + sLat + "&lon=" + sLon;        	
         }
 
@@ -404,13 +420,10 @@ public class FireReporter extends Activity {
 	protected void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		
-		outState.putParcelableArrayList("list", mFireList);
+		outState.putParcelableArrayList("list", (ArrayList<? extends Parcelable>) mFireList);
 		outState.putBoolean("gotdata", bGotData);
 	}
 
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onDestroy()
-	 */
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
@@ -419,9 +432,6 @@ public class FireReporter extends Activity {
 		CancelDownload();
 	}
 
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onPause()
-	 */
 	@Override
 	protected void onPause() {
 		// TODO Auto-generated method stub
@@ -444,5 +454,19 @@ public class FireReporter extends Activity {
 			oNasa = null;
 		}
 	}
+
+	public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+		
+		Editor editor = PreferenceManager.getDefaultSharedPreferences(FireReporter.this).edit();
+		editor.putInt("CURRENT_VIEW", itemPosition);
+		editor.commit();
+		
+		mPosition = itemPosition;
+		bGotData = false;
+		GetData(true);
+
+	    return true;
+	}
 }
+
 

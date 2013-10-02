@@ -25,24 +25,23 @@
 
 package com.nextgis.firereporter;
 
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.MenuItem;
+
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
-import android.app.Activity;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 
-import android.view.MenuItem;
 import android.view.View;
 
 import android.widget.TextView;
 import android.widget.ImageView;
 
-public class AboutReporter extends Activity {
+public class AboutReporter extends SherlockActivity {
     private TextView txtVersion;
     private TextView txtDescription;
     private ImageView imgLogo;
@@ -53,6 +52,7 @@ public class AboutReporter extends Activity {
 	@SuppressLint("NewApi")
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
         setContentView(R.layout.about);
 
         txtVersion = (TextView) findViewById(R.id.txtVersion);
@@ -75,11 +75,8 @@ public class AboutReporter extends Activity {
 
         txtVersion.setText("v. " + versionName + " (rev. " + versionCode + ")");
         
-        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-        if (currentapiVersion >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
-        	getActionBar().setHomeButtonEnabled(true);
-        }
-	    getActionBar().setDisplayHomeAsUpEnabled(true);
+       	getSupportActionBar().setHomeButtonEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     private void onLogoClicked() {

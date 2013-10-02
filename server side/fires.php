@@ -56,7 +56,8 @@ function get_rows_nasa($db, $user, $pass, $table, $lat, $lon, $radius, $date, $l
         $limit = 50;
     }
     $host = 'localhost';
-    $port = 5432; 
+    $port = 5432;
+    $adds_degree = 5; 
 
     try 
     {
@@ -68,9 +69,21 @@ function get_rows_nasa($db, $user, $pass, $table, $lat, $lon, $radius, $date, $l
                 $sql = $sql . ", round(ST_Distance_Sphere(ST_PointFromText('POINT($lon $lat)', 4326), $table.wkb_geometry)) AS dist ";
             }
 
-            $sql = $sql . " FROM $table";                
+            $sql = $sql . " FROM $table";
+            
+            if( isset($lat) && isset($lon) ){
+                $minx = $lon - $adds_degree;
+                $miny = $lat - $adds_degree;
+                $maxx = $lon + $adds_degree;
+                $maxy = $lat + $adds_degree; 
+                
+                $sql = $sql . " WHERE ST_Intersects($table.wkb_geometry, ST_GeomFromText('POLYGON(($minx $maxy, $maxx $maxy, $maxx $miny, $minx $miny, $minx $maxy))', 4326) )";         
 
-            if( isset($date) ){
+                if( isset($date) ){
+                    $sql = $sql . " AND CAST(date as date) >= '$date'";
+                }                   
+            }
+            else if( isset($date) ){
                 $sql = $sql . " WHERE CAST(date as date) >= '$date'";
             }
             
@@ -78,13 +91,12 @@ function get_rows_nasa($db, $user, $pass, $table, $lat, $lon, $radius, $date, $l
                 $sql = "SELECT * FROM ($sql)t WHERE dist <= $radius";
             }
 
-
             $sql = $sql . " LIMIT $limit";
 
             $result = pg_query($conn, $sql);
             if (!$result) {
-               $return['error'] = true;
-                $return['msg'] = "Error in SQL query: " . pg_last_error();
+                $return['error'] = true;
+                $return['msg'] = "Error in SQL query: " . pg_last_error() . ". SQL: $sql";
                 echo json_encode($return);
                 return;
             }
@@ -130,7 +142,8 @@ function get_rows_user($db, $user, $pass, $table, $lat, $lon, $radius, $date, $l
         $limit = 50;
     }
     $host = 'localhost';
-    $port = 5432; 
+    $port = 5432;
+    $adds_degree = 5;
 
     try 
     {
@@ -142,9 +155,21 @@ function get_rows_user($db, $user, $pass, $table, $lat, $lon, $radius, $date, $l
                 $sql = $sql . ", round(ST_Distance_Sphere(ST_PointFromText('POINT($lon $lat)', 4326), $table.geom)) AS dist ";
             }
 
-            $sql = $sql . " FROM $table";                
+            $sql = $sql . " FROM $table";
+            
+            if( isset($lat) && isset($lon) ){
+                $minx = $lon - $adds_degree;
+                $miny = $lat - $adds_degree;
+                $maxx = $lon + $adds_degree;
+                $maxy = $lat + $adds_degree; 
+                
+                $sql = $sql . " WHERE ST_Intersects($table.geom, ST_GeomFromText('POLYGON(($minx $maxy, $maxx $maxy, $maxx $miny, $minx $miny, $minx $maxy))', 4326) )";       
 
-            if( isset($date) ){
+                if( isset($date) ){
+                    $sql = $sql . " AND CAST(report_date as date) >= '$date'";
+                }   
+            }
+            else if( isset($date) ){
                 $sql = $sql . " WHERE CAST(report_date as date) >= '$date'";
             }   
             
@@ -157,7 +182,7 @@ function get_rows_user($db, $user, $pass, $table, $lat, $lon, $radius, $date, $l
             $result = pg_query($conn, $sql);
             if (!$result) {
                 $return['error'] = true;
-                $return['msg'] = "Error in SQL query: " . pg_last_error();
+                $return['msg'] = "Error in SQL query: " . pg_last_error() . ". SQL: $sql";
                 echo json_encode($return);
                 return;
             }

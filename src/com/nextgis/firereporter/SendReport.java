@@ -383,19 +383,19 @@ public class SendReport extends Activity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 return true;
-	        case R.id.settings:
+	        case FireReporter.MENU_SETTINGS:
 	            // app icon in action bar clicked; go home
 	            Intent intentSet = new Intent(this, SettingsMain.class);
 	            intentSet.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentSet);
 	            return true;
-	        case R.id.about:
+	        case FireReporter.MENU_ABOUT:
 	            // app icon in action bar clicked; go home
 	            Intent intentAbout = new Intent(this, AboutReporter.class);
 	            intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentAbout);
 	            return true;	
-	        case R.id.report:
+	        case FireReporter.MENU_REPORT:
 	        	onReport();
 	            return true;   
 	         default:
@@ -405,8 +405,20 @@ public class SendReport extends Activity {
  
 	  @Override
 	  public boolean onCreateOptionsMenu(Menu menu) {
-	    getMenuInflater().inflate(R.menu.report, menu);
-	    return true;
+			menu.add(com.actionbarsherlock.view.Menu.NONE, FireReporter.MENU_SETTINGS, com.actionbarsherlock.view.Menu.NONE, R.string.tabSettings)
+	       .setIcon(R.drawable.ic_action_settings)
+	       .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
+			
+			menu.add(com.actionbarsherlock.view.Menu.NONE, FireReporter.MENU_ABOUT, com.actionbarsherlock.view.Menu.NONE, R.string.tabAbout)
+			.setIcon(R.drawable.ic_action_about)
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
+			
+			menu.add(com.actionbarsherlock.view.Menu.NONE, FireReporter.MENU_REPORT, com.actionbarsherlock.view.Menu.NONE, R.string.sSend)
+			.setIcon(R.drawable.ic_navigation_accept)
+			.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+			
+			return true;
+
 	  }
 	  
 	  public void onReport(){
