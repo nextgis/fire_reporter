@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* FireReporter
+* MainActivity
 * ---------------------------------------------------------
 * Report and view fires
 *
@@ -88,11 +88,11 @@ public class HttpGetter extends AsyncTask<String, Void, Void> {
 	        	
 	        	httpget = new HttpGet(sURL);
 	            
-	            Log.d("FireReporter", "HTTPGet URL " + sURL);
+	            Log.d("MainActivity", "HTTPGet URL " + sURL);
 	        	
-	        	//if(urls[1] != null){
-	        	//	httpget.setHeader("Cookie", urls[1]);
-	        	//}
+	        	if(urls.length > 1){
+	        		httpget.setHeader("Cookie", urls[1]);
+	        	}
 	        	
 	            HttpClient Client = new DefaultHttpClient();
 	            HttpResponse response = Client.execute(httpget);	            
@@ -158,7 +158,7 @@ public class HttpGetter extends AsyncTask<String, Void, Void> {
             	mEventReceiver.sendMessage(msg);
             }
         } else {
-            //Toast.makeText(FireReporter.this, "Source: " + Content, Toast.LENGTH_LONG).show();
+            //Toast.makeText(MainActivity.this, "Source: " + Content, Toast.LENGTH_LONG).show();
         }
     }
 /*

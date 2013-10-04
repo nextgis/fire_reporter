@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* FireReporter
+* MainActivity
 * ---------------------------------------------------------
 * Report and view fires
 *
@@ -118,7 +118,7 @@ public class FireListAdapter extends BaseAdapter {
 			this.dfDist = dfDist;
 			
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
-        	nFormat = prefs.getInt(SettingsFragment.KEY_PREF_COORD_FORMAT + "_int", Location.FORMAT_SECONDS);
+        	nFormat = prefs.getInt(SettingsActivity.KEY_PREF_COORD_FORMAT + "_int", Location.FORMAT_SECONDS);
         	sCoordLat = (String) c.getResources().getText(R.string.coord_lat);
         	sCoordLon = (String) c.getResources().getText(R.string.coord_lon);
         	

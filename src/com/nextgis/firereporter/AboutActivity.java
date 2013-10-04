@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* FireReporter
+* MainActivity
 * ---------------------------------------------------------
 * Report and view fires
 *
@@ -27,25 +27,62 @@ package com.nextgis.firereporter;
 
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
-import com.nextgis.firereporter.SettingsFragment;
 
 import android.annotation.SuppressLint;
+
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.net.Uri;
 import android.os.Bundle;
 
-public class SettingsMain extends SherlockActivity {
+import android.view.View;
 
-    @SuppressLint("NewApi")
+import android.widget.TextView;
+import android.widget.ImageView;
+
+public class AboutActivity extends SherlockActivity {
+    private TextView txtVersion;
+    private TextView txtDescription;
+    private ImageView imgLogo;
+
+    private String versionName = "unknown";
+    private String versionCode = "unknown";
+
+	@SuppressLint("NewApi")
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
+        setContentView(R.layout.about);
+
+        txtVersion = (TextView) findViewById(R.id.txtVersion);
+        txtDescription = (TextView) findViewById(R.id.txtDescription);
+        imgLogo = (ImageView) findViewById(R.id.imgLogo);
+
+        imgLogo.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                onLogoClicked();
+            }
+        });
+
+        String pkgName = this.getPackageName();
+        try {
+            PackageManager pm = this.getPackageManager();
+            versionName = pm.getPackageInfo(pkgName, 0).versionName;
+            versionCode = Integer.toString(pm.getPackageInfo(this.getPackageName(), 0).versionCode);
+        } catch (NameNotFoundException e) {
+        }
+
+        txtVersion.setText("v. " + versionName + " (rev. " + versionCode + ")");
+        
        	getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        
-        // Display the fragment as the main content.
-        getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, new SettingsFragment())
-                .commit();
+    }
+
+    private void onLogoClicked() {
+        Intent browserIntent = new Intent("android.intent.action.VIEW",
+                Uri.parse("http://nextgis.ru"));
+        startActivity(browserIntent);
     }
     
     @Override
@@ -53,7 +90,7 @@ public class SettingsMain extends SherlockActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 // app icon in action bar clicked; go home
-                Intent intent = new Intent(this, FireReporter.class);
+                Intent intent = new Intent(this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 return true;

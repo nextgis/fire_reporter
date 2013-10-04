@@ -25,6 +25,7 @@
 
   <!-- settings tab -->
   <string name="sGeneral">Общие настройки</string>
+  <string name="sGeneralSumm">Общие настройки приложения</string>
   <string name="sDatabase">Настройки баз данных</string>
   <string name="sSave">Сохранить</string>
   <string name="stNasaServer">Установки сервера данных MOD14</string>

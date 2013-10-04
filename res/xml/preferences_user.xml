@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+* FireReporter
+* ==========================================================================
+* Report and view fires
+*
+* Copyright (C) 2013 NextGIS (http://nextgis.ru)
+*
+* This source is free software; you can redistribute it and/or modify it under
+* the terms of the GNU General Public License as published by the Free
+* Software Foundation; either version 2 of the License, or (at your option)
+* any later version.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT ANY
+* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+* details.
+*
+* A copy of the GNU General Public License is available on the World Wide Web
+* at <http://www.gnu.org/copyleft/gpl.html>. You can also obtain it by writing
+* to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+* MA 02111-1307, USA.
+-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/tabSettings" >
+	<EditTextPreference
+	    android:key="user_server"
+	    android:title="@string/sServer"
+	    android:summary="@string/sServerSummary"
+	    android:defaultValue="@string/stDefaultServer"
+	    android:dialogTitle="@string/sServerSummary" />		 		
+	<EditTextPreference
+	    android:key="user_user"
+	    android:title="@string/sUser"
+	    android:summary="@string/sUserSummary"
+	    android:defaultValue="firereporter"
+	    android:dialogTitle="@string/sUserSummary" />		
+	<EditTextPreference
+	    android:key="user_password"
+	    android:title="@string/sPassword"
+	    android:summary="@string/sPasswordSummary"
+	    android:defaultValue="8QdA4"
+	    android:dialogTitle="@string/sPasswordSummary" 
+	    android:inputType="textPassword"/>			    	    	
+	<Preference android:title="@string/sCheckDBConn"
+	    android:icon="@drawable/ic_navigation_refresh"
+        android:key="check_user_connection"
+        android:summary="@string/sCheckDBConnSummary"/>				
+</PreferenceScreen>

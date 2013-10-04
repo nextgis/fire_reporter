@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+* FireReporter
+* ==========================================================================
+* Report and view fires
+*
+* Copyright (C) 2013 NextGIS (http://nextgis.ru)
+*
+* This source is free software; you can redistribute it and/or modify it under
+* the terms of the GNU General Public License as published by the Free
+* Software Foundation; either version 2 of the License, or (at your option)
+* any later version.
+*
+* This code is distributed in the hope that it will be useful, but WITHOUT ANY
+* WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+* FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+* details.
+*
+* A copy of the GNU General Public License is available on the World Wide Web
+* at <http://www.gnu.org/copyleft/gpl.html>. You can also obtain it by writing
+* to the Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+* MA 02111-1307, USA.
+-->
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/tabSettings" >
+	<ListPreference
+	    android:key="interval"
+	    android:title="@string/sInterval"
+		android:defaultValue="5 min"
+		android:entries="@array/interval_updates"
+		android:entryValues="@array/interval_updates"
+		android:dialogTitle="@string/sInterval" />	
+	<CheckBoxPreference
+	    android:key="send_data_in_suspend"
+		android:title="@string/sSendDataInSuspend"
+		android:defaultValue="false"			
+		android:summary="@string/sSendDataInSuspend" />			
+	<EditTextPreference
+	    android:key="row_count"
+	    android:title="@string/sRowsCount"
+	    android:defaultValue="60"
+	    android:dialogTitle="@string/sRowsCount"
+	    android:inputType="number" />
+	<CheckBoxPreference
+	    android:key="search_current_date"
+		android:title="@string/sSearchDate"
+		android:defaultValue="true"			
+		android:summary="@string/sSearchDate" />
+	<EditTextPreference
+	    android:key="days_before_current"
+	    android:title="@string/sDaysBeforeSearchDate"
+	    android:defaultValue="5"
+	    android:dialogTitle="@string/sDaysBeforeSearchDate"
+	    android:inputType="number" />	
+	<EditTextPreference
+	    android:key="fire_search_radius"
+	    android:title="@string/sRadiusGetFires"
+	    android:defaultValue="5"
+	    android:dialogTitle="@string/sRadiusGetFires"
+	    android:inputType="number" />	
+</PreferenceScreen>

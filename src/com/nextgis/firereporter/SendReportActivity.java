@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* FireReporter
+* MainActivity
 * ---------------------------------------------------------
 * Report and view fires
 *
@@ -25,8 +25,11 @@
 
 package com.nextgis.firereporter;
 
+import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuItem;
+
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -41,13 +44,10 @@ import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
 
-import android.view.Menu;
-import android.view.MenuItem;
-
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class SendReport extends Activity {
+public class SendReportActivity extends SherlockActivity {
     private EditText edLatitude;
     private EditText edLongitude;
     private EditText edAzimuth;
@@ -84,7 +84,7 @@ public class SendReport extends Activity {
         if (currentapiVersion >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
         	getActionBar().setHomeButtonEnabled(true);
         }
-	    getActionBar().setDisplayHomeAsUpEnabled(true);       
+       	getSupportActionBar().setHomeButtonEnabled(true);
         
 
         edLatitude = (EditText) findViewById(R.id.edLatitude);
@@ -193,13 +193,13 @@ public class SendReport extends Activity {
             float lon = Float.valueOf(edLongitude.getText().toString()).floatValue();
             sendReport();
         } catch (NumberFormatException e) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(SendReport.this);
+            AlertDialog.Builder builder = new AlertDialog.Builder(SendReportActivity.this);
             builder.setMessage(getString(R.string.confirmSend))
                    .setCancelable(false)
                    .setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
                        public void onClick(DialogInterface dialog, int id) {
                             dialog.dismiss();
-                            SendReport.this.sendReport();
+                            SendReportActivity.this.sendReport();
                        }
                    })
                    .setNegativeButton(getString(R.string.no), new DialogInterface.OnClickListener() {
@@ -224,7 +224,7 @@ public class SendReport extends Activity {
         } else {
             // network is down, save report in local database
             saveDataLocally();
-            Toast.makeText(SendReport.this, getString(R.string.reportStored),
+            Toast.makeText(SendReportActivity.this, getString(R.string.reportStored),
                            Toast.LENGTH_LONG).show();
 
             // schedule alarm for delayed send
@@ -297,10 +297,10 @@ public class SendReport extends Activity {
             int rows = stmt.executeUpdate();
             stmt.close();
             conn.close();
-            Toast.makeText(SendReport.this, getString(R.string.reportSend),
+            Toast.makeText(SendReportActivity.this, getString(R.string.reportSend),
                            Toast.LENGTH_SHORT).show();
         } catch (SQLException e) {
-            Toast.makeText(SendReport.this, e.toString(),
+            Toast.makeText(SendReportActivity.this, e.toString(),
                            Toast.LENGTH_LONG).show();
             return;
         } finally {
@@ -363,7 +363,7 @@ public class SendReport extends Activity {
         }
 
         protected Void doInBackground(ContentValues... vals) {
-            ReportsDbAdapter dbAdapter = new ReportsDbAdapter(SendReport.this);
+            ReportsDbAdapter dbAdapter = new ReportsDbAdapter(SendReportActivity.this);
             dbAdapter.open();
             long res = dbAdapter.saveReport(vals[0]);
             dbAdapter.close();
@@ -379,23 +379,23 @@ public class SendReport extends Activity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 // app icon in action bar clicked; go home
-                Intent intent = new Intent(this, FireReporter.class);
+                Intent intent = new Intent(this, MainActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 return true;
-	        case FireReporter.MENU_SETTINGS:
+	        case MainActivity.MENU_SETTINGS:
 	            // app icon in action bar clicked; go home
-	            Intent intentSet = new Intent(this, SettingsMain.class);
+	            Intent intentSet = new Intent(this, SettingsActivity.class);
 	            intentSet.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentSet);
 	            return true;
-	        case FireReporter.MENU_ABOUT:
+	        case MainActivity.MENU_ABOUT:
 	            // app icon in action bar clicked; go home
-	            Intent intentAbout = new Intent(this, AboutReporter.class);
+	            Intent intentAbout = new Intent(this, AboutActivity.class);
 	            intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentAbout);
 	            return true;	
-	        case FireReporter.MENU_REPORT:
+	        case MainActivity.MENU_REPORT:
 	        	onReport();
 	            return true;   
 	         default:
@@ -405,15 +405,15 @@ public class SendReport extends Activity {
  
 	  @Override
 	  public boolean onCreateOptionsMenu(Menu menu) {
-			menu.add(com.actionbarsherlock.view.Menu.NONE, FireReporter.MENU_SETTINGS, com.actionbarsherlock.view.Menu.NONE, R.string.tabSettings)
+			menu.add(com.actionbarsherlock.view.Menu.NONE, MainActivity.MENU_SETTINGS, com.actionbarsherlock.view.Menu.NONE, R.string.tabSettings)
 	       .setIcon(R.drawable.ic_action_settings)
 	       .setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);		
 			
-			menu.add(com.actionbarsherlock.view.Menu.NONE, FireReporter.MENU_ABOUT, com.actionbarsherlock.view.Menu.NONE, R.string.tabAbout)
+			menu.add(com.actionbarsherlock.view.Menu.NONE, MainActivity.MENU_ABOUT, com.actionbarsherlock.view.Menu.NONE, R.string.tabAbout)
 			.setIcon(R.drawable.ic_action_about)
 			.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
 			
-			menu.add(com.actionbarsherlock.view.Menu.NONE, FireReporter.MENU_REPORT, com.actionbarsherlock.view.Menu.NONE, R.string.sSend)
+			menu.add(com.actionbarsherlock.view.Menu.NONE, MainActivity.MENU_REPORT, com.actionbarsherlock.view.Menu.NONE, R.string.sSend)
 			.setIcon(R.drawable.ic_navigation_accept)
 			.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 			
@@ -446,13 +446,13 @@ public class SendReport extends Activity {
 			dbHelper.close();			
 			
 			if(nRowId == -1){
-				Toast.makeText(SendReport.this, getString(R.string.reportStoredFailed), Toast.LENGTH_LONG).show();
+				Toast.makeText(SendReportActivity.this, getString(R.string.reportStoredFailed), Toast.LENGTH_LONG).show();
 	        	finish();
 	        	return;				
 			}
 
         } catch (NumberFormatException e) {
-        	Toast.makeText(SendReport.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+        	Toast.makeText(SendReportActivity.this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         	finish();
         	return;
         }

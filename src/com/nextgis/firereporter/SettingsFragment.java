@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* FireReporter
+* MainActivity
 * ---------------------------------------------------------
 * Report and view fires
 *
@@ -30,10 +30,13 @@ import org.json.JSONObject;
 
 import com.nextgis.firereporter.R;
 
+import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -45,36 +48,16 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.widget.Toast;
 
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener{
-    public static final String KEY_PREF_COORD_FORMAT = "coordinates_format";
-    public static final String KEY_PREF_INTERVAL = "interval";
-    public static final String KEY_PREF_ROW_COUNT = "row_count";
-    public static final String KEY_PREF_SEARCH_CURR_DAY = "search_current_date";
-    public static final String KEY_PREF_SEARCH_DAY_INTERVAL = "days_before_current";
-	public static final String KEY_PREF_SEND_IN_SUSPEND = "send_data_in_suspend";
-	public static final String KEY_PREF_FIRE_SEARCH_RADIUS = "fire_search_radius";
-    
-    public static final String KEY_PREF_SRV_NASA = "mod14_server";
-    public static final String KEY_PREF_SRV_NASA_USER = "mod14_user";
-    public static final String KEY_PREF_SRV_NASA_PASS = "mod14_password";
-    public static final String KEY_PREF_SRV_NASA_CHECK_CONN = "check_mod14_connection";
-    
-    public static final String KEY_PREF_SRV_USER = "user_server";
-    public static final String KEY_PREF_SRV_USER_USER = "user_user";
-    public static final String KEY_PREF_SRV_USER_PASS = "user_password";
-    public static final String KEY_PREF_SRV_USER_CHECK_CONN = "check_user_connection";
-    
-    public static final String KEY_PREF_SRV_SCAN = "scanex_server";
-    public static final String KEY_PREF_SRV_SCAN_USER = "scanex_user";
-    public static final String KEY_PREF_SRV_SCAN_PASS = "scanex_password";
-    public static final String KEY_PREF_SRV_SCAN_CHECK_CONN = "check_scanex_connection";
-    
+
     private ListPreference mSendDataIntervalPref;
     private CheckBoxPreference mSendDataInSuspendPref;    
     private EditTextPreference mRowCountPref;
     private EditTextPreference mDayIntervalPref;
     private CheckBoxPreference mSearchCurrentDatePref;
-    private EditTextPreference mFireSearchRadiusPref;
+    private EditTextPreference mFireSearchRadiusPref;     
+	
     private EditTextPreference mNasaServerPref;
     private EditTextPreference mNasaServerUserPref;
     private EditTextPreference mNasaServerPassPref;
@@ -86,55 +69,76 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
     //private EditTextPreference mScanServerPref;
     private EditTextPreference mScanServerUserPref;
     private EditTextPreference mScanServerPassPref;    
-    
-    private Handler mReturnHandler; 
+
+    private Handler mReturnHandler;
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        
+        String settings = getArguments().getString("settings");
+        if ("general".equals(settings)) {
+            addPreferencesFromResource(R.xml.preferences_general);
+        } else if ("nasa".equals(settings)) {
+            addPreferencesFromResource(R.xml.preferences_nasa);
+        } else if ("user".equals(settings)) {
+            addPreferencesFromResource(R.xml.preferences_user);
+        } else if ("scanex".equals(settings)) {
+            addPreferencesFromResource(R.xml.preferences_scanex);
+        }
         // Load the preferences from an XML resource
-        addPreferencesFromResource(R.xml.preferences);
+        //addPreferencesFromResource(R.xml.preferences);
         
-        mSendDataIntervalPref = (ListPreference) findPreference(KEY_PREF_INTERVAL);
-        mSendDataIntervalPref.setSummary((String) mSendDataIntervalPref.getValue()); 
+        mSendDataIntervalPref = (ListPreference) findPreference(SettingsActivity.KEY_PREF_INTERVAL);
+        if(mSendDataIntervalPref != null)
+        	mSendDataIntervalPref.setSummary((String) mSendDataIntervalPref.getValue()); 
         
-        mSendDataInSuspendPref = (CheckBoxPreference) findPreference(KEY_PREF_SEND_IN_SUSPEND);
-        mSendDataInSuspendPref.setSummary(mSendDataInSuspendPref.isChecked() ? R.string.sSendDataInSuspendOn : R.string.sSendDataInSuspendOff);	    
+        mSendDataInSuspendPref = (CheckBoxPreference) findPreference(SettingsActivity.KEY_PREF_SEND_IN_SUSPEND);
+        if(mSendDataInSuspendPref != null)
+        	mSendDataInSuspendPref.setSummary(mSendDataInSuspendPref.isChecked() ? R.string.sSendDataInSuspendOn : R.string.sSendDataInSuspendOff);	    
         
-        mRowCountPref = (EditTextPreference) findPreference(KEY_PREF_ROW_COUNT);
-        mRowCountPref.setSummary((String) mRowCountPref.getText());
+        mRowCountPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_ROW_COUNT);
+        if(mRowCountPref != null)
+        	mRowCountPref.setSummary((String) mRowCountPref.getText());
         
-        mFireSearchRadiusPref = (EditTextPreference) findPreference(KEY_PREF_FIRE_SEARCH_RADIUS);
-        mFireSearchRadiusPref.setSummary((String) mFireSearchRadiusPref.getText());
+        mFireSearchRadiusPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS);
+        if(mFireSearchRadiusPref != null)
+        	mFireSearchRadiusPref.setSummary((String) mFireSearchRadiusPref.getText());
         
-        mDayIntervalPref = (EditTextPreference) findPreference(KEY_PREF_SEARCH_DAY_INTERVAL);
-        mDayIntervalPref.setSummary((String) mDayIntervalPref.getText());
+        mDayIntervalPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL);
+        if(mDayIntervalPref != null)
+        	mDayIntervalPref.setSummary((String) mDayIntervalPref.getText());
         
-        mSearchCurrentDatePref = (CheckBoxPreference) findPreference(KEY_PREF_SEARCH_CURR_DAY);
-        mSearchCurrentDatePref.setSummary(mSearchCurrentDatePref.isChecked() ? R.string.stSearchCurrentDayOn : R.string.stSearchCurrentDayOff);	    
+        mSearchCurrentDatePref = (CheckBoxPreference) findPreference(SettingsActivity.KEY_PREF_SEARCH_CURR_DAY);
+        if(mSearchCurrentDatePref != null)
+        	mSearchCurrentDatePref.setSummary(mSearchCurrentDatePref.isChecked() ? R.string.stSearchCurrentDayOn : R.string.stSearchCurrentDayOff);	    
         
-        mNasaServerPref = (EditTextPreference) findPreference(KEY_PREF_SRV_NASA);
-        mNasaServerPref.setSummary((String) mNasaServerPref.getText());
-        mNasaServerUserPref = (EditTextPreference) findPreference(KEY_PREF_SRV_NASA_USER);
-        mNasaServerUserPref.setSummary((String) mNasaServerUserPref.getText());
+        mNasaServerPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SRV_NASA);
+        if(mNasaServerPref != null)
+        	mNasaServerPref.setSummary((String) mNasaServerPref.getText());
+        mNasaServerUserPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SRV_NASA_USER);
+        if(mNasaServerUserPref != null)
+        	mNasaServerUserPref.setSummary((String) mNasaServerUserPref.getText());
         
-        mUserServerPref = (EditTextPreference) findPreference(KEY_PREF_SRV_USER);
-        mUserServerPref.setSummary((String) mUserServerPref.getText());
-        mUserServerUserPref = (EditTextPreference) findPreference(KEY_PREF_SRV_USER_USER);
-        mUserServerUserPref.setSummary((String) mUserServerUserPref.getText());
+        mUserServerPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SRV_USER);
+        if(mUserServerPref != null)
+        	mUserServerPref.setSummary((String) mUserServerPref.getText());
+        mUserServerUserPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SRV_USER_USER);
+        if(mUserServerUserPref != null)
+        	mUserServerUserPref.setSummary((String) mUserServerUserPref.getText());
 
-        mScanServerUserPref = (EditTextPreference) findPreference(KEY_PREF_SRV_SCAN_USER);
-        mScanServerUserPref.setSummary((String) mScanServerUserPref.getText());
+        mScanServerUserPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SRV_SCAN_USER);
+        if(mScanServerUserPref != null)
+        	mScanServerUserPref.setSummary((String) mScanServerUserPref.getText());
         
+        mNasaServerPassPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SRV_NASA_PASS);
+        mUserServerPassPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SRV_USER_PASS);
+        mScanServerPassPref = (EditTextPreference) findPreference(SettingsActivity.KEY_PREF_SRV_SCAN_PASS);
         
-        mNasaServerPassPref = (EditTextPreference) findPreference(KEY_PREF_SRV_NASA_PASS);
-        mUserServerPassPref = (EditTextPreference) findPreference(KEY_PREF_SRV_USER_PASS);
-        mScanServerPassPref = (EditTextPreference) findPreference(KEY_PREF_SRV_SCAN_PASS);
-        
-        final Preference checkNasaConnPref = (Preference) findPreference(KEY_PREF_SRV_NASA_CHECK_CONN);
-        final Preference checkUserConnPref = (Preference) findPreference(KEY_PREF_SRV_USER_CHECK_CONN);
-        final Preference checkScanConnPref = (Preference) findPreference(KEY_PREF_SRV_SCAN_CHECK_CONN);
+        final Preference checkNasaConnPref = (Preference) findPreference(SettingsActivity.KEY_PREF_SRV_NASA_CHECK_CONN);
+        final Preference checkUserConnPref = (Preference) findPreference(SettingsActivity.KEY_PREF_SRV_USER_CHECK_CONN);
+        final Preference checkScanConnPref = (Preference) findPreference(SettingsActivity.KEY_PREF_SRV_SCAN_CHECK_CONN);
         
         mReturnHandler = new Handler() {
             public void handleMessage(Message msg) {
@@ -158,6 +162,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		    		    	}
 		    		    	else {
 		    		    		checkUserConnPref.setSummary(R.string.stConnectionSucceeded);
+		    		    		checkUserConnPref.setIcon(R.drawable.ic_navigation_accept);
 		    		    	}
 						} catch (JSONException e) {
 							Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_LONG).show();
@@ -176,6 +181,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		    		    	}
 		    		    	else {
 		    		    		checkNasaConnPref.setSummary(R.string.stConnectionSucceeded);
+		    		    		checkNasaConnPref.setIcon(R.drawable.ic_navigation_accept);
 		    		    	}
 						} catch (JSONException e) {
 							Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_LONG).show();
@@ -191,12 +197,14 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 	    				}
 	    				else{
 	    					checkScanConnPref.setSummary(R.string.stConnectionSucceeded);
+	    					checkScanConnPref.setIcon(R.drawable.ic_navigation_accept);
 	    				}
 	    			}
             	}
             };
         };        
         
+        if(checkNasaConnPref != null)
         checkNasaConnPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
         	public boolean onPreferenceClick(Preference preference) {
         		String sURL = mNasaServerPref.getText() + "?function=test_conn_nasa&user=" + mNasaServerUserPref.getText() + "&pass=" + mNasaServerPassPref.getText();
@@ -205,6 +213,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
         	}
         });
         
+        if(checkUserConnPref != null)
         checkUserConnPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
            	     String sURL = mUserServerPref.getText() + "?function=test_conn_user&user=" + mUserServerUserPref.getText() + "&pass=" + mUserServerPassPref.getText();
@@ -213,13 +222,14 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
             }
         });
         
+        if(checkScanConnPref != null)
         checkScanConnPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
             	//String sURL = mUserServerPref.getText() + "?function=test_conn_nasa&user=" + mUserServerUserPref.getText() + "&pass=" + mUserServerPassPref.getText();
         		new HttpScanexLogin(getActivity(), 3, getResources().getString(R.string.stChecking), mReturnHandler, true).execute(mScanServerUserPref.getText(), mScanServerPassPref.getText());
 				return true;
             }
-        });     
+        });    
     }
 	
     @Override
@@ -235,30 +245,30 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
     }
-        
+       
 	public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
 		CharSequence newVal = "";
 		Preference Pref = findPreference(key);
-		if(key.equals(KEY_PREF_INTERVAL)){
+		if(key.equals(SettingsActivity.KEY_PREF_INTERVAL)){
 			newVal = sharedPreferences.getString(key, "0 min");
         	String toLongStr = ((String) newVal).substring(0, newVal.length() - 4);
     		Editor editor = getPreferenceScreen().getSharedPreferences().edit();
     		editor.putLong(key + "_long", Long.parseLong(toLongStr) * 1000);
     		editor.commit();
     		
-			SharedPreferences mySharedPreferences = getActivity().getSharedPreferences(FireReporter.PREFERENCES, Context.MODE_PRIVATE);
+			SharedPreferences mySharedPreferences = getActivity().getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
             SharedPreferences.Editor editor1 = mySharedPreferences.edit();
             editor1.putLong(key + "_long", Long.parseLong(toLongStr) * 1000);
             editor1.commit();    		
 		}
-		else if(key.equals(KEY_PREF_ROW_COUNT) || key.equals(KEY_PREF_SEARCH_DAY_INTERVAL) || key.equals(KEY_PREF_FIRE_SEARCH_RADIUS)){
+		else if(key.equals(SettingsActivity.KEY_PREF_ROW_COUNT) || key.equals(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL) || key.equals(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS)){
 			newVal = sharedPreferences.getString(key, "");
 			int nVal = Integer.parseInt((String) newVal);
     		Editor editor = getPreferenceScreen().getSharedPreferences().edit();
     		editor.putInt(key + "_int", nVal);
     		editor.commit();
 		} 	
-		else if(key.equals(KEY_PREF_SEARCH_CURR_DAY)){
+		else if(key.equals(SettingsActivity.KEY_PREF_SEARCH_CURR_DAY)){
 			boolean bPref = sharedPreferences.getBoolean(key, false); 
 			newVal = bPref ? getText(R.string.stSearchCurrentDayOn) : getText(R.string.stSearchCurrentDayOff);
 			
@@ -266,7 +276,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
             editor.putBoolean(key, bPref);
             editor.commit();			
 		}
-		else if(key.equals(KEY_PREF_SEND_IN_SUSPEND)){
+		else if(key.equals(SettingsActivity.KEY_PREF_SEND_IN_SUSPEND)){
 			boolean bPref = sharedPreferences.getBoolean(key, false); 
 			newVal = bPref ? getText(R.string.sSendDataInSuspendOn) : getText(R.string.sSendDataInSuspendOff);
 			
@@ -274,7 +284,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
             editor.putBoolean(key, bPref);
             editor.commit();			
 		}		
-		else if(key.equals(KEY_PREF_SRV_NASA) || key.equals(KEY_PREF_SRV_USER)){
+		else if(key.equals(SettingsActivity.KEY_PREF_SRV_NASA) || key.equals(SettingsActivity.KEY_PREF_SRV_USER)){
 			newVal = sharedPreferences.getString(key, "");
 			String sURL = newVal.toString();
 			if(sURL.startsWith("http://") || sURL.startsWith("HTTP://")){
@@ -289,11 +299,11 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 	    		newVal = sURL;
 			}
 		}
-		else if(key.equals(KEY_PREF_SRV_NASA_USER) || key.equals(KEY_PREF_SRV_USER_USER) || key.equals(KEY_PREF_SRV_SCAN_USER)) {  
+		else if(key.equals(SettingsActivity.KEY_PREF_SRV_NASA_USER) || key.equals(SettingsActivity.KEY_PREF_SRV_USER_USER) || key.equals(SettingsActivity.KEY_PREF_SRV_SCAN_USER)) {  
             newVal = sharedPreferences.getString(key, "");
 		}
 			
 		if(newVal.length() > 0)
         	Pref.setSummary(newVal);
-	}	
+	}	 
 }

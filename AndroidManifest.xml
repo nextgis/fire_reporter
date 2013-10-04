@@ -24,7 +24,7 @@
     <application 
         android:label="@string/app_name" 
         android:icon="@drawable/icon">
-        <activity android:name="FireReporter"
+        <activity android:name="MainActivity"
                   android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -32,14 +32,14 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="SendReport">
+        <activity android:name="SendReportActivity">
             <intent-filter>
                 <action android:name="com.nextgis.firereporter.ACTION_COMPASS_UPDATE" />
             </intent-filter>
         </activity>
-        <activity android:name="ViewFires"></activity>
-        <activity android:name="SettingsMain"></activity>
-        <activity android:name="AboutReporter"></activity>
+        <activity android:name="ViewFiresActivity"></activity>
+        <activity android:name="SettingsActivity"></activity>
+        <activity android:name="AboutActivity"></activity>
 
         <!-- receiver android:name=".OnAlarmReceiver"></receiver-->
         <service android:name=".ReporterService"

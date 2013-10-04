@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* FireReporter
+* MainActivity
 * ---------------------------------------------------------
 * Report and view fires
 *
@@ -66,8 +66,8 @@ import com.actionbarsherlock.view.MenuItem;
 import com.nextgis.firereporter.FireListAdapter.FireItem;
 import com.nextgis.firereporter.R;
 
-public class FireReporter extends SherlockActivity implements OnNavigationListener{
-    public final static String PREFERENCES = "FireReporter";
+public class MainActivity extends SherlockActivity implements OnNavigationListener{
+    public final static String PREFERENCES = "MainActivity";
     
 	public final static int MENU_REPORT = 1;
 	public final static int MENU_PLACE = 2;
@@ -91,7 +91,7 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 	    mFireList = new ArrayList<FireItem>();
 	    
         // initialize the default settings
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_old_deleteme, false);
 	    
 	    bGotData = false;
 	    
@@ -109,7 +109,7 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
             	Bundle resultData = msg.getData();
             	boolean bHaveErr = resultData.getBoolean("error");
             	if(bHaveErr){
-            		Toast.makeText(FireReporter.this, resultData.getString("err_msq"), Toast.LENGTH_LONG).show();
+            		Toast.makeText(MainActivity.this, resultData.getString("err_msq"), Toast.LENGTH_LONG).show();
             	}
             	else{
             		int nType = resultData.getInt("src");
@@ -128,7 +128,7 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 	    actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);
 	    
 
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(FireReporter.this);
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
         mPosition = prefs.getInt("CURRENT_VIEW", 0);
 	    actionBar.setSelectedNavigationItem(mPosition);
 	    
@@ -189,19 +189,19 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 		switch (item.getItemId()) {
 	        case android.R.id.home:
 	            // app icon in action bar clicked; go home
-	            Intent intentMain = new Intent(this, FireReporter.class);
+	            Intent intentMain = new Intent(this, MainActivity.class);
 	            intentMain.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 	            startActivity(intentMain);
 	            return true;
 	        case MENU_SETTINGS:
 	            // app icon in action bar clicked; go home
-	            Intent intentSet = new Intent(this, SettingsMain.class);
+	            Intent intentSet = new Intent(this, SettingsActivity.class);
 	            intentSet.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentSet);
 	            return true;
 	        case MENU_ABOUT:
 	            // app icon in action bar clicked; go home
-	            Intent intentAbout = new Intent(this, AboutReporter.class);
+	            Intent intentAbout = new Intent(this, AboutActivity.class);
 	            intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentAbout);
 	            return true;	  
@@ -210,7 +210,7 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 	        	GetData(true);
 	        	return true;
 	        case MENU_PLACE:
-	            Intent intentSendReport = new Intent(this, SendReport.class);
+	            Intent intentSendReport = new Intent(this, SendReportActivity.class);
 	            intentSendReport.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentSendReport);
 	        	return true;
@@ -262,13 +262,13 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 	        }
         }
         
-	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(FireReporter.this);
-        String sURL = prefs.getString(SettingsFragment.KEY_PREF_SRV_USER, getResources().getString(R.string.stDefaultServer));
-        String sLogin = prefs.getString(SettingsFragment.KEY_PREF_SRV_USER_USER, "firereporter");
-        String sPass = prefs.getString(SettingsFragment.KEY_PREF_SRV_USER_PASS, "8QdA4");
-        int nDayInterval = prefs.getInt(SettingsFragment.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", 5);
-        int fetchRows = prefs.getInt(SettingsFragment.KEY_PREF_ROW_COUNT + "_int", 15);
-        int searchRadius = prefs.getInt(SettingsFragment.KEY_PREF_FIRE_SEARCH_RADIUS + "int", 5) * 1000;//meters
+	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        String sURL = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER, getResources().getString(R.string.stDefaultServer));
+        String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER_USER, "firereporter");
+        String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER_PASS, "8QdA4");
+        int nDayInterval = prefs.getInt(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", 5);
+        int fetchRows = prefs.getInt(SettingsActivity.KEY_PREF_ROW_COUNT + "_int", 15);
+        int searchRadius = prefs.getInt(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS + "int", 5) * 1000;//meters
         boolean searchByDate = prefs.getBoolean("search_current_date", false);
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -287,7 +287,7 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 
         //SELECT * FROM (SELECT id, report_date, latitude, longitude, round(ST_Distance_Sphere(ST_PointFromText('POINT(37.506247479468584 55.536129316315055)', 4326), fires.geom)) AS dist FROM fires WHERE ST_Intersects(fires.geom, ST_GeomFromText('POLYGON((32.5062474795 60.5361293163, 42.5062474795 60.5361293163, 42.5062474795 50.5361293163, 32.5062474795 50.5361293163, 32.5062474795 60.5361293163))', 4326) ) AND CAST(report_date as date) >= '2013-09-27')t WHERE dist <= 5000 LIMIT 15
 	    //String sRemoteData = "http://gis-lab.info/data/zp-gis/soft/fires.php?function=get_rows_nasa&user=fire_usr&pass=J59DY&limit=5";
-        oUser = new HttpGetter(FireReporter.this, 1, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress);
+        oUser = new HttpGetter(MainActivity.this, 1, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress);
        	oUser.execute(sFullURL);
 	}
 	
@@ -309,14 +309,14 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 	        }
         }
         
-	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(FireReporter.this);
-        String sURL = prefs.getString(SettingsFragment.KEY_PREF_SRV_NASA, getResources().getString(R.string.stDefaultServer));
-        String sLogin = prefs.getString(SettingsFragment.KEY_PREF_SRV_NASA_USER, "fire_usr");
-        String sPass = prefs.getString(SettingsFragment.KEY_PREF_SRV_NASA_PASS, "J59DY");
-        int nDayInterval = prefs.getInt(SettingsFragment.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", 5);
-        int fetchRows = prefs.getInt(SettingsFragment.KEY_PREF_ROW_COUNT + "_int", 15);
-        int searchRadius = prefs.getInt(SettingsFragment.KEY_PREF_FIRE_SEARCH_RADIUS + "int", 5) * 1000;//meters
-        boolean searchByDate = prefs.getBoolean(SettingsFragment.KEY_PREF_SEARCH_CURR_DAY, false);
+	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        String sURL = prefs.getString(SettingsActivity.KEY_PREF_SRV_NASA, getResources().getString(R.string.stDefaultServer));
+        String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_NASA_USER, "fire_usr");
+        String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_NASA_PASS, "J59DY");
+        int nDayInterval = prefs.getInt(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", 5);
+        int fetchRows = prefs.getInt(SettingsActivity.KEY_PREF_ROW_COUNT + "_int", 15);
+        int searchRadius = prefs.getInt(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS + "int", 5) * 1000;//meters
+        boolean searchByDate = prefs.getBoolean(SettingsActivity.KEY_PREF_SEARCH_CURR_DAY, false);
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
         Date date = new Date();
@@ -334,11 +334,16 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 
 	    //String sRemoteData = "http://gis-lab.info/data/zp-gis/soft/fires.php?function=get_rows_nasa&user=fire_usr&pass=J59DY&limit=5";
         //if(!oNasa.getStatus().equals(AsyncTask.Status.RUNNING) && !oNasa.getStatus().equals(AsyncTask.Status.PENDING))
-        oNasa = new HttpGetter(FireReporter.this, 2, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress);
+        oNasa = new HttpGetter(MainActivity.this, 2, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress);
         oNasa.execute(sFullURL);
     }
 	
 	protected void GetScanexData(){
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+		String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_USER, "new@kosmosnimki.ru");
+		String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_PASS, "test123");
+		//new HttpScanexLogin(MainActivity.this, 3, getResources().getString(R.string.stChecking), mFillDataHandler, true).execute(sLogin, sPass);
+		
 		mFireList.add(new FireItem(getBaseContext(), 3, 0, Calendar.getInstance().getTime(), 37, 55, -1, R.drawable.ic_scan, "http://ya.ru"));
 		mListAdapter.notifyDataSetChanged();
 	}
@@ -352,6 +357,14 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 		else if(nType == 2){//nasa
 			nIconId = R.drawable.ic_nasa;
 			oNasa = null;
+		}
+		else if(nType == 3){//scanex
+			//nIconId = R.drawable.ic_nasa;
+			//oNasa = null;
+			String sCookie = sJSON; 
+	        new HttpGetter(MainActivity.this, 3, getResources().getString(R.string.stDownLoading), mFillDataHandler, true).execute("http://fires.kosmosnimki.ru/SAPI/Account/Get/", sCookie);
+		//
+			
 		}
 		
 	    try {
@@ -384,7 +397,7 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 	    	  }
 	    		  
 	    	  if(bAdd)	  
-	    		  mFireList.add(new FireItem(FireReporter.this, nType, nId, dtFire, dfLon, dfLat, dfDist, nIconId, ""));		
+	    		  mFireList.add(new FireItem(MainActivity.this, nType, nId, dtFire, dfLon, dfLat, dfDist, nIconId, ""));		
 	      }	 
 	      
 	    } catch (Exception e) {
@@ -457,7 +470,7 @@ public class FireReporter extends SherlockActivity implements OnNavigationListen
 
 	public boolean onNavigationItemSelected(int itemPosition, long itemId) {
 		
-		Editor editor = PreferenceManager.getDefaultSharedPreferences(FireReporter.this).edit();
+		Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
 		editor.putInt("CURRENT_VIEW", itemPosition);
 		editor.commit();
 		

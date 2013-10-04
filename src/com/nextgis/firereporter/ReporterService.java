@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* FireReporter
+* MainActivity
 * ---------------------------------------------------------
 * Report and view fires
 *
@@ -115,9 +115,9 @@ public class ReporterService extends Service {
         {
         	Log.d(TAG, "Action " + ACTION_START);
         	Context c = this.getApplicationContext();
-           	SharedPreferences prefs = getSharedPreferences(FireReporter.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS); 
-           	long nMinTimeBetweenSend = prefs.getLong(SettingsFragment.KEY_PREF_INTERVAL + "_long", DateUtils.MINUTE_IN_MILLIS);
-           	boolean bSendInSuspend = prefs.getBoolean(SettingsFragment.KEY_PREF_SEND_IN_SUSPEND, true);
+           	SharedPreferences prefs = getSharedPreferences(MainActivity.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS); 
+           	long nMinTimeBetweenSend = prefs.getLong(SettingsActivity.KEY_PREF_INTERVAL + "_long", DateUtils.MINUTE_IN_MILLIS);
+           	boolean bSendInSuspend = prefs.getBoolean(SettingsActivity.KEY_PREF_SEND_IN_SUSPEND, true);
 
            	if(!HttpGetter.IsNetworkAvailible(c)){
                	ScheduleNextUpdate(c, nMinTimeBetweenSend, bSendInSuspend);
@@ -181,10 +181,10 @@ public class ReporterService extends Service {
 	     protected Void doInBackground(Context... context) {
 			Log.d(TAG, "SendPostionData");
 
-           	SharedPreferences prefs = getSharedPreferences(FireReporter.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS); 
-           	String sHost = prefs.getString(SettingsFragment.KEY_PREF_SRV_USER, getResources().getString(R.string.stDefaultServer));
-            String sUser = prefs.getString(SettingsFragment.KEY_PREF_SRV_USER_USER, "firereporter");
-            String sPass = prefs.getString(SettingsFragment.KEY_PREF_SRV_USER_PASS, "8QdA4");
+           	SharedPreferences prefs = getSharedPreferences(MainActivity.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS); 
+           	String sHost = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER, getResources().getString(R.string.stDefaultServer));
+            String sUser = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER_USER, "firereporter");
+            String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER_PASS, "8QdA4");
 
 			//Queue records to send
 			Cursor cursor = ReportsDB.query(ReportsDatabase.TABLE_POS, null, null, null, null, null, null);

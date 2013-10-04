@@ -1,6 +1,6 @@
 /*******************************************************************************
 *
-* FireReporter
+* MainActivity
 * ---------------------------------------------------------
 * Report and view fires
 *
@@ -25,7 +25,6 @@
 package com.nextgis.firereporter;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +45,6 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 
@@ -123,11 +121,12 @@ public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
                 boolean bGetCookie = false;
                 // Execute HTTP Post Request
                 HttpResponse response = httpclient.execute(httppost, localContext);
+                
                 List<Cookie> cl = cookieStore.getCookies();
                 for(int i = 0; i < cl.size(); i++){
                 	if(cl.get(i).getName().contentEquals(".MYKOSMOSNIMKIAUTH")){
                 		bGetCookie = true;
-                		mContent = cl.get(i).getValue();
+                		mContent = cl.get(i).getName() + "=" + cl.get(i).getValue();
                 		break;
                 	}
                 }
@@ -188,21 +187,13 @@ public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
             	mEventReceiver.sendMessage(msg);
             }
         } else {
-            //Toast.makeText(FireReporter.this, "Source: " + Content, Toast.LENGTH_LONG).show();
+            //Toast.makeText(MainActivity.this, "Source: " + Content, Toast.LENGTH_LONG).show();
         }
     }
 
 	@Override
 	protected void onCancelled() {		
 		super.onCancelled();
-		if(mbShowProgress){
-			mDownloadDialog.dismiss();
-		}
-	}
-
-	@Override
-	protected void onCancelled(Void result) {
-		super.onCancelled(result);
 		if(mbShowProgress){
 			mDownloadDialog.dismiss();
 		}

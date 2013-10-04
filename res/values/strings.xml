@@ -24,12 +24,16 @@
   <string name="sRows">Rows: </string>
 
   <!-- settings tab -->
-  <string name="sGeneral">General settings</string>
+  <string name="sGeneral">General</string>
+  <string name="sGeneralSumm">The application general settings</string>
   <string name="sDatabase">Database settings</string>
   <string name="sSave">Save</string>
-  <string name="stNasaServer">MOD14 server settings</string>
-  <string name="stUserServer">User fires server settings</string>
-  <string name="stScanexServer">Scanex server settings</string>
+  <string name="stNasaServer">MOD14 server</string>
+  <string name="stNasaServerSumm">The MOD14 server (data from NASA) settings</string>
+  <string name="stUserServer">User fires server</string>
+  <string name="stUserServerSumm">The user fires (data from users) server settings</string>
+  <string name="stScanexServer">Scanex server</string>
+  <string name="stScanexServerSumm">The Scanex server settings</string>
   
   <!-- settings general -->
   <string name="sInterval">If failed, try to send data every, min</string>
