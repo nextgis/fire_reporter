@@ -32,7 +32,6 @@ import com.actionbarsherlock.app.SherlockPreferenceActivity;
 import com.actionbarsherlock.view.MenuItem;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -65,6 +64,8 @@ public class SettingsActivity extends SherlockPreferenceActivity {
     public static final String KEY_PREF_SRV_SCAN_USER = "scanex_user";
     public static final String KEY_PREF_SRV_SCAN_PASS = "scanex_password";
     public static final String KEY_PREF_SRV_SCAN_CHECK_CONN = "check_scanex_connection";	
+    public static final String KEY_PREF_SRV_SCAN_USER_NAME = "scanex_user_name";
+    public static final String KEY_PREF_SRV_SCAN_USER_PHONE = "scanex_user_phone";
 
 	
 	public void onCreate(Bundle savedInstanceState) {
@@ -106,6 +107,8 @@ public class SettingsActivity extends SherlockPreferenceActivity {
                 return super.onOptionsItemSelected(item);
         }
     }
+    
+    //TODO: add 2.3 support for check db connections
     
     @SuppressLint("NewApi")
 	@Override

@@ -29,13 +29,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.http.Header;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.protocol.ClientContext;
@@ -46,10 +46,10 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -88,85 +88,116 @@ public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
 
     @Override
     protected Void doInBackground(String... urls) {
-        if(HttpGetter.IsNetworkAvailible(mContext))
-        {    	
-        	String sUser = urls[0];
-        	String sPass = urls[1];
-        	
-        	//http://my.kosmosnimki.ru/Account/Login
-        	//email=new@kosmosnimki.ru&password=test123
-        	
-        	// Create a new HttpClient and Post Header
-            HttpClient httpclient = new DefaultHttpClient();
-            
-            HttpPost httppost = new HttpPost("http://my.kosmosnimki.ru/Account/Login");
-            
-            HttpParams params = httppost.getParams();
-            params.setParameter(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
-            
-            HttpContext localContext = new BasicHttpContext();
-            // Create a local instance of cookie store
-            CookieStore cookieStore = new BasicCookieStore();
+    	if(HttpGetter.IsNetworkAvailible(mContext))
+    	{    	
+    		String sUser = urls[0];
+    		String sPass = urls[1];
 
-            // Bind custom cookie store to the local context
-            localContext.setAttribute(ClientContext.COOKIE_STORE, cookieStore);
+    		try {
 
-            try {
-                // Add your data
-                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-                nameValuePairs.add(new BasicNameValuePair("email", sUser));
-                nameValuePairs.add(new BasicNameValuePair("password", sPass));
-                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));                
+    			// Create a new HttpClient
+    			HttpClient httpclient = new DefaultHttpClient();
 
-                boolean bGetCookie = false;
-                // Execute HTTP Post Request
-                HttpResponse response = httpclient.execute(httppost, localContext);
-                
-                List<Cookie> cl = cookieStore.getCookies();
-                for(int i = 0; i < cl.size(); i++){
-                	if(cl.get(i).getName().contentEquals(".MYKOSMOSNIMKIAUTH")){
-                		bGetCookie = true;
-                		mContent = cl.get(i).getName() + "=" + cl.get(i).getValue();
-                		break;
-                	}
-                }
-                
-                Bundle bundle = new Bundle();
-                if(bGetCookie){
-                	bundle.putBoolean("error", false);
-                	bundle.putString("json", mContent);
-                }
-                else{
-                	bundle.putBoolean("error", true);
-                }
-                bundle.putInt("src", mnType);
-	            Message msg = new Message();
-	            msg.setData(bundle);
-	            if(mEventReceiver != null){
-	            	mEventReceiver.sendMessage(msg);
-	            }
-	            
-            } catch (ClientProtocolException e) {
-            	mError = e.getMessage();
-	            cancel(true);
-            } catch (IOException e) {
-            	mError = e.getMessage();
-	            cancel(true);
-            }
-        }
-        else {
-        	Bundle bundle = new Bundle();
-            bundle.putBoolean("error", true);
-            bundle.putString("err_msq", mContext.getString(R.string.stNetworkUnreach));
-            bundle.putInt("src", mnType);
-            
-            Message msg = new Message();
-            msg.setData(bundle);
-            if(mEventReceiver != null){
-            	mEventReceiver.sendMessage(msg);
-            }
-        }
-        return null;
+    			// step 1. open login dialog
+    			String sRedirect = "http://fires.kosmosnimki.ru/SAPI/oAuthCallback.html&authServer=MyKosmosnimki";
+    			String sURL = "http://fires.kosmosnimki.ru/SAPI/LoginDialog.ashx?redirect_uri=" + Uri.encode(sRedirect);
+    			HttpGet httpget = new HttpGet(sURL);
+    			HttpParams params = httpget.getParams();
+    			params.setParameter(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
+    			httpget.setParams(params);
+    			HttpResponse response = httpclient.execute(httpget);
+
+    			//2 get cookie and params            
+    			Header head = response.getFirstHeader("Set-Cookie");
+    			String sCookie = head.getValue();
+
+    			head = response.getFirstHeader("Location");
+    			String sLoc = head.getValue();
+
+    			Uri uri = Uri.parse(sLoc);
+    			String sClientId = uri.getQueryParameter("client_id");
+    			String sScope = uri.getQueryParameter("scope");
+    			String sState = uri.getQueryParameter("state");
+
+    			String sPostUri = "http://my.kosmosnimki.ru/Account/LoginDialog?redirect_uri=" + Uri.encode(sRedirect) + "&client_id=" + sClientId + "&scope=" + sScope + "&state=" + sState;
+
+    			HttpPost httppost = new HttpPost(sPostUri);     
+
+    			params = httppost.getParams();
+    			params.setParameter(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
+    			httppost.setHeader("Cookie", sCookie);
+
+    			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+    			nameValuePairs.add(new BasicNameValuePair("email", sUser));
+    			nameValuePairs.add(new BasicNameValuePair("password", sPass));
+    			nameValuePairs.add(new BasicNameValuePair("IsApproved", "true"));
+    			httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));                
+
+    			response = httpclient.execute(httppost);
+    			head = response.getFirstHeader("Set-Cookie");
+    			sCookie += "; " + head.getValue();
+    			head = response.getFirstHeader("Location");
+    			sLoc = head.getValue();
+
+    			uri = Uri.parse(sLoc);
+    			String sCode = uri.getQueryParameter("code");
+    			sState = uri.getQueryParameter("state");
+
+    			//3 get 
+    			String sGetUri = "http://fires.kosmosnimki.ru/SAPI/Account/logon/?authServer=MyKosmosnimki&code=" + sCode + "&state=" + sState;
+    			httpget = new HttpGet(sGetUri);
+    			httpget.setHeader("Cookie", sCookie);
+    			params = httpget.getParams();
+    			params.setParameter(ClientPNames.HANDLE_REDIRECTS, Boolean.FALSE);
+    			httpget.setParams(params);
+    			response = httpclient.execute(httpget);
+
+    			head = response.getFirstHeader("Set-Cookie");
+    			sCookie += "; " + head.getValue();
+
+
+    			Bundle bundle = new Bundle();
+    			if(sCookie.length() > 0){
+    				//if(bGetCookie){
+    				bundle.putBoolean("error", false);
+    				bundle.putString("json", sCookie);
+    				//bundle.putString("json", mContent);
+    			}
+    			else{
+    				bundle.putBoolean("error", true);
+    			}
+
+    			bundle.putInt("src", mnType);
+    			Message msg = new Message();
+    			msg.setData(bundle);
+    			if(mEventReceiver != null){
+    				mEventReceiver.sendMessage(msg);
+    			}
+
+    		} catch (ClientProtocolException e) {
+    			mError = e.getMessage();
+    			cancel(true);
+    		} catch (IOException e) {
+    			mError = e.getMessage();
+    			cancel(true);
+    		} catch (Exception e){
+    			mError = e.getMessage();
+    			cancel(true);
+    		}
+    	}
+    	else {
+    		Bundle bundle = new Bundle();
+    		bundle.putBoolean("error", true);
+    		bundle.putString("err_msq", mContext.getString(R.string.stNetworkUnreach));
+    		bundle.putInt("src", mnType);
+
+    		Message msg = new Message();
+    		msg.setData(bundle);
+    		if(mEventReceiver != null){
+    			mEventReceiver.sendMessage(msg);
+    		}
+    	}
+    	return null;
     }
 
     @Override

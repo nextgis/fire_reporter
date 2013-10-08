@@ -34,6 +34,8 @@
   <string name="stUserServerSumm">The user fires (data from users) server settings</string>
   <string name="stScanexServer">Scanex server</string>
   <string name="stScanexServerSumm">The Scanex server settings</string>
+  <string name="stScanexServerUserFullName">Name</string>
+  <string name="stScanexServerUserPhone">Phone</string>
   
   <!-- settings general -->
   <string name="sInterval">If failed, try to send data every, min</string>

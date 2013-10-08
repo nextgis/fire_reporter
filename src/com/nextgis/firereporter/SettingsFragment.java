@@ -30,7 +30,6 @@ import org.json.JSONObject;
 
 import com.nextgis.firereporter.R;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -198,7 +197,49 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 	    				else{
 	    					checkScanConnPref.setSummary(R.string.stConnectionSucceeded);
 	    					checkScanConnPref.setIcon(R.drawable.ic_navigation_accept);
+	    					
+	    	        		new HttpGetter(getActivity(), 4, getResources().getString(R.string.stChecking), mReturnHandler, true).execute("http://fires.kosmosnimki.ru/SAPI/Account/Get/?CallBackName=777", sData);
 	    				}
+	    			}
+	    			else if(nType == 4){//scanex detailes
+	    				try {
+	    					String sSubData = sData.substring(4, sData.length() - 1);
+							JSONObject rootobj = new JSONObject(sSubData);
+							String sStatus = rootobj.getString("Status");
+							if(sStatus.equals("OK")){
+								JSONObject resobj =  rootobj.getJSONObject("Result");
+								String sName = "";
+								if(!resobj.isNull("FullName"))
+									sName = resobj.getString("FullName");
+								String sPhone = "";
+								if(!resobj.isNull("Phone"))
+									sPhone = resobj.getString("Phone");
+								//add properties
+								if(sPhone.length() > 0){
+									Preference PhonePref = new Preference(getActivity());
+									PhonePref.setTitle(R.string.stScanexServerUserPhone);
+									PhonePref.setSummary(sPhone);
+									PhonePref.setOrder(2);
+									SettingsFragment.this.getPreferenceScreen().addPreference(PhonePref);
+								}
+								
+								if(sName.length() > 0){
+									Preference NamePref = new Preference(getActivity());
+									NamePref.setTitle(R.string.stScanexServerUserFullName);
+									NamePref.setSummary(sName);
+									NamePref.setOrder(2);
+									SettingsFragment.this.getPreferenceScreen().addPreference(NamePref);
+								}
+								
+							}
+							else
+							{
+								Toast.makeText(getActivity(), rootobj.getString("ErrorInfo"), Toast.LENGTH_LONG).show();
+							}
+						} catch (JSONException e) {
+							Toast.makeText(getActivity(), e.toString(), Toast.LENGTH_LONG).show();
+							e.printStackTrace();
+						}
 	    			}
             	}
             };
