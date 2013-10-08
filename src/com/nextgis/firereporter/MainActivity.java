@@ -50,10 +50,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SpinnerAdapter;
 import android.widget.Toast;
@@ -84,11 +88,17 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
     private LocationManager mlocManager;
     private boolean bGotData;
     private HttpGetter oUser = null, oNasa = null;
+    private MenuItem refreshItem;
+    private int mFilter;
+    private int mFiled;
+    
 	@Override
 	  public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    
 	    mFireList = new ArrayList<FireItem>();
+	    mFilter = 3;
+	    mFiled = 0;
 	    
         // initialize the default settings
         PreferenceManager.setDefaultValues(this, R.xml.preferences_old_deleteme, false);
@@ -157,8 +167,6 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 
 		});
          
-        if(mFireList.isEmpty())
-        	GetData(false);
 	  }
 
 	  @Override
@@ -176,9 +184,13 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			.setIcon(R.drawable.ic_location_place)
 			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 			
-			menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_REFRESH, com.actionbarsherlock.view.Menu.NONE, R.string.sRefresh)
-			.setIcon(R.drawable.ic_navigation_refresh)
-			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			refreshItem = menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_REFRESH, com.actionbarsherlock.view.Menu.NONE, R.string.sRefresh)
+			.setIcon(R.drawable.ic_navigation_refresh);
+			refreshItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
+			
+	        if(mFireList.isEmpty())
+	        	GetData(false);
+
 			
 			return true;
 	    
@@ -207,7 +219,9 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	            return true;	  
 	        case MENU_REFRESH:
 	        	bGotData = false;
-	        	GetData(true);
+	        		        	
+	        	GetData(false);
+	        	
 	        	return true;
 	        case MENU_PLACE:
 	            Intent intentSendReport = new Intent(this, SendReportActivity.class);
@@ -220,12 +234,36 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		
 	}
 	
+	public void refresh() {
+		if(refreshItem == null)
+			return;
+
+	     LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	     ImageView iv = (ImageView) inflater.inflate(R.layout.refresh_action_view, null);
+
+	     Animation rotation = AnimationUtils.loadAnimation(this, R.anim.clockwise_refresh);
+	     rotation.setRepeatCount(Animation.INFINITE);
+	     iv.startAnimation(rotation);
+
+	     refreshItem.setActionView(iv);
+	}
+	
+	public void completeRefresh() {
+		if(refreshItem == null || refreshItem.getActionView() == null)
+			return;
+	    refreshItem.getActionView().clearAnimation();
+	    refreshItem.setActionView(null);
+	}
+	
 	protected void GetData(boolean bShoProgress){
 		if(bGotData)
 			return;
 		bGotData = true;
 		mFireList.clear();
 		CancelDownload();
+		
+    	refresh();
+    	
 		switch(mPosition){
 			case 0://all
 				GetUserData(bShoProgress);
@@ -407,6 +445,15 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	    Collections.sort(mFireList, new FireItemComparator());
     
 	    mListAdapter.notifyDataSetChanged();
+	    
+	    //TODO:
+	    if(mFiled > mFilter){
+	    	completeRefresh();
+	    	mFiled = 0;
+	    }
+	    else{
+	    	mFiled += nType;
+	    }
 	}
 	
 	public class FireItemComparator implements Comparator<FireItem>
@@ -466,6 +513,8 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			oNasa.Abort();
 			oNasa = null;
 		}
+		
+		completeRefresh();
 	}
 
 	public boolean onNavigationItemSelected(int itemPosition, long itemId) {
@@ -476,7 +525,7 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 		
 		mPosition = itemPosition;
 		bGotData = false;
-		GetData(true);
+		GetData(false);
 
 	    return true;
 	}
