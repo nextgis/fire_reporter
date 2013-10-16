@@ -1,9 +1,8 @@
 /*******************************************************************************
-*
-* MainActivity
-* ---------------------------------------------------------
-* Report and view fires
-*
+ * Project:  Fire reporter
+ * Purpose:  Report and view fires
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
+ *******************************************************************************
 * Copyright (C) 2011,2013 NextGIS (http://nextgis.ru)
 *
 * This source is free software; you can redistribute it and/or modify it under
@@ -25,148 +24,110 @@
 
 package com.nextgis.firereporter;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.location.Location;
-import android.location.LocationManager;
-import android.net.Uri;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.SpinnerAdapter;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockActivity;
-import com.actionbarsherlock.app.ActionBar.OnNavigationListener;
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.app.ActionBar.Tab;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
-import com.nextgis.firereporter.FireListAdapter.FireItem;
-import com.nextgis.firereporter.R;
 
-public class MainActivity extends SherlockActivity implements OnNavigationListener{
-    public final static String PREFERENCES = "MainActivity";
+public class MainActivity extends SherlockFragmentActivity{
+    public final static String PREFERENCES = "FireReporter";
+    public final static String TAG = "FireReporter";
+    public final static String INTENT_NAME = "com.nextgis.firereporter.intent.action.SYNC";
+    
+    public final static String PREF_CURRENT_TAB = "CURRENT_TAB";
+    public final static String PREF_CURRENT_FILTER = "CURRENT_FILTER";
+
+    private static final int NUM_ITEMS = 2;
     
 	public final static int MENU_REPORT = 1;
 	public final static int MENU_PLACE = 2;
 	public final static int MENU_REFRESH = 3;
 	public final static int MENU_SETTINGS = 4;
 	public final static int MENU_ABOUT = 5;
+
+	public final static int SRC_NASA = 1 << 0; // 1
+	public final static int SRC_USER = 1 << 1; // 2
+	public final static int SRC_SCANEX = 1 << 2; // 4
 	
 	
-    private ListView mListFireInfo;
-    private List <FireItem> mFireList;
-    private int mPosition;
-    protected FireListAdapter mListAdapter;
-    private Handler mFillDataHandler; 
-    private LocationManager mlocManager;
-    private boolean bGotData;
-    private HttpGetter oUser = null, oNasa = null;
+	private FragmentRollAdapter mAdapter;
+    private ViewPager mPager;
+    
+	private int mPosition;
     private MenuItem refreshItem;
-    private int mFilter;
-    private int mFiled;
     
 	@Override
 	  public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
 	    
-	    mFireList = new ArrayList<FireItem>();
-	    mFilter = 3;
-	    mFiled = 0;
-	    
         // initialize the default settings
         PreferenceManager.setDefaultValues(this, R.xml.preferences_old_deleteme, false);
-	    
-	    bGotData = false;
-	    
-	    mlocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
 	    setContentView(R.layout.main);
 	    
-	    if(savedInstanceState != null){
-	    	mFireList = savedInstanceState.getParcelableArrayList("list");
-	    	bGotData = savedInstanceState.getBoolean("gotdata");
-	    }
-    
-        mFillDataHandler = new Handler() {
-            public void handleMessage(Message msg) {
-            	Bundle resultData = msg.getData();
-            	boolean bHaveErr = resultData.getBoolean("error");
-            	if(bHaveErr){
-            		Toast.makeText(MainActivity.this, resultData.getString("err_msq"), Toast.LENGTH_LONG).show();
-            	}
-            	else{
-            		int nType = resultData.getInt("src");
-            		String sData = resultData.getString("json");
-            		FillData(nType, sData);
-            	}
-            };
-        };	    
-	    
-	       
-	    ActionBar actionBar = getSupportActionBar();
-	    
-	    SpinnerAdapter mSpinnerAdapter = ArrayAdapter.createFromResource(this, R.array.fires_src, android.R.layout.simple_spinner_dropdown_item);	    
-	    actionBar.setDisplayShowTitleEnabled(false);
-	    actionBar.setNavigationMode(com.actionbarsherlock.app.ActionBar.NAVIGATION_MODE_LIST);
-	    actionBar.setListNavigationCallbacks(mSpinnerAdapter, this);
-	    
-
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        mPosition = prefs.getInt("CURRENT_VIEW", 0);
-	    actionBar.setSelectedNavigationItem(mPosition);
-	    
-	    // load list
-	    mListFireInfo = (ListView)findViewById(R.id.Mainlist);
-        // create new adapter
-	    mListAdapter = new FireListAdapter(this, mFireList);
-        // set adapter to list view
-        mListFireInfo.setAdapter(mListAdapter);
+	    final ActionBar actionBar = getSupportActionBar();
+	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+        actionBar.setDisplayShowTitleEnabled(false);
         
+        mAdapter = new FragmentRollAdapter(getSupportFragmentManager());
+    	mAdapter.setActionBar(actionBar);
+        mPager = (ViewPager)findViewById(R.id.pager);
+        mPager.setAdapter(mAdapter);
+        
+        mPager.setOnPageChangeListener(new OnPageChangeListener() {
 
-        // implement event when an item on list view is selected
-        mListFireInfo.setOnItemClickListener(new OnItemClickListener(){
-        	public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-        		// get the list adapter
-        		FireListAdapter appFireListAdapter = (FireListAdapter)parent.getAdapter();
-        		// get selected item on the list
-        		FireItem item = (FireItem)appFireListAdapter.getItem(pos);
-        		// launch the selected application
-        		String sURL = item.GetUrl();
-        		if(sURL.length() > 0){
-        			Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(sURL));
-        			startActivity(browserIntent);
-        		}
-        	}
+			public void onPageScrollStateChanged(int arg0) {
+				}
 
-		});
-         
+			public void onPageScrolled(int arg0, float arg1, int arg2) {
+				}
+
+			public void onPageSelected(int arg0) {
+				Log.d(TAG, "onPageSelected: " + arg0);
+				
+				actionBar.getTabAt(arg0).select();
+				
+				Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
+				editor.putInt(PREF_CURRENT_TAB, arg0);
+				editor.commit();
+			}
+        } );        
+        
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+        mPosition = prefs.getInt(PREF_CURRENT_TAB, 0);
+        
+        Tab tab = actionBar.newTab()
+                .setText(R.string.tabNotification)
+                .setTabListener(new TabListener<SherlockFragment>(0 + "", mPager));
+        actionBar.addTab(tab);
+        
+        tab = actionBar.newTab()
+            .setText(R.string.tabSubscription)
+            .setTabListener(new TabListener<SherlockFragment>(1 + "", mPager));
+        actionBar.addTab(tab); 
+        
+        actionBar.getTabAt(mPosition).select();
+        
 	  }
 
 	  @Override
@@ -180,16 +141,12 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 			.setIcon(R.drawable.ic_action_about)
 			.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
 			
-			menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_PLACE, com.actionbarsherlock.view.Menu.NONE, R.string.sPlace)
-			.setIcon(R.drawable.ic_location_place)
-			.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
-			
 			refreshItem = menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_REFRESH, com.actionbarsherlock.view.Menu.NONE, R.string.sRefresh)
 			.setIcon(R.drawable.ic_navigation_refresh);
 			refreshItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 			
-	        if(mFireList.isEmpty())
-	        	GetData(false);
+	        //if(mFireList.isEmpty())
+	        //	GetData(false);
 
 			
 			return true;
@@ -217,17 +174,6 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 	            intentAbout.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
 	            startActivity(intentAbout);
 	            return true;	  
-	        case MENU_REFRESH:
-	        	bGotData = false;
-	        		        	
-	        	GetData(false);
-	        	
-	        	return true;
-	        case MENU_PLACE:
-	            Intent intentSendReport = new Intent(this, SendReportActivity.class);
-	            intentSendReport.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-	            startActivity(intentSendReport);
-	        	return true;
 	    }
 		
 		return super.onOptionsItemSelected(item);
@@ -247,288 +193,66 @@ public class MainActivity extends SherlockActivity implements OnNavigationListen
 
 	     refreshItem.setActionView(iv);
 	}
-	
+
 	public void completeRefresh() {
 		if(refreshItem == null || refreshItem.getActionView() == null)
 			return;
-	    refreshItem.getActionView().clearAnimation();
-	    refreshItem.setActionView(null);
-	}
-	
-	protected void GetData(boolean bShoProgress){
-		if(bGotData)
-			return;
-		bGotData = true;
-		mFireList.clear();
-		CancelDownload();
-		
-    	refresh();
-    	
-		switch(mPosition){
-			case 0://all
-				GetUserData(bShoProgress);
-				GetNasaData(bShoProgress);
-				GetScanexData();
-				break;
-			case 1://user
-				GetUserData(bShoProgress);
-				break;
-			case 2://nasa
-				GetNasaData(bShoProgress);
-				break;
-			case 3://scanex
-				GetScanexData();
-				break;
-		}
-	}
-	
-	protected void GetUserData(boolean bShowProgress){
-        Location currentLocation = null;
-        String sLat = null, sLon = null;
-        if(mlocManager != null){
-        	currentLocation = mlocManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);        
-        	if(currentLocation == null){
-        		currentLocation = mlocManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-        	}
-        
-	        if(currentLocation == null){
-	        	Toast.makeText(this, getString(R.string.noLocation), Toast.LENGTH_LONG).show();
-	        }
-	        else {
-	            sLat = Double.toString(currentLocation.getLatitude());
-	            sLon = Double.toString(currentLocation.getLongitude());
-	        }
-        }
-        
-	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        String sURL = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER, getResources().getString(R.string.stDefaultServer));
-        String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER_USER, "firereporter");
-        String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER_PASS, "8QdA4");
-        int nDayInterval = prefs.getInt(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", 5);
-        int fetchRows = prefs.getInt(SettingsActivity.KEY_PREF_ROW_COUNT + "_int", 15);
-        int searchRadius = prefs.getInt(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS + "int", 5) * 1000;//meters
-        boolean searchByDate = prefs.getBoolean("search_current_date", false);
-
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        long diff = 86400000L * nDayInterval;//1000 * 60 * 60 * 24 * 5;// 5 days  
-        date.setTime(date.getTime() - diff);
-        String dt = dateFormat.format(date);
-        
-        String sFullURL = sURL + "?function=get_rows_user&user=" + sLogin + "&pass=" + sPass+ "&limit=" + fetchRows + "&radius=" + searchRadius;//
-        if(searchByDate){
-        	sFullURL += "&date=" + dt;
-        }
-        if(sLat.length() > 0 && sLon.length() > 0){
-        	sFullURL += "&lat=" + sLat + "&lon=" + sLon;        	
-        }
-
-        //SELECT * FROM (SELECT id, report_date, latitude, longitude, round(ST_Distance_Sphere(ST_PointFromText('POINT(37.506247479468584 55.536129316315055)', 4326), fires.geom)) AS dist FROM fires WHERE ST_Intersects(fires.geom, ST_GeomFromText('POLYGON((32.5062474795 60.5361293163, 42.5062474795 60.5361293163, 42.5062474795 50.5361293163, 32.5062474795 50.5361293163, 32.5062474795 60.5361293163))', 4326) ) AND CAST(report_date as date) >= '2013-09-27')t WHERE dist <= 5000 LIMIT 15
-	    //String sRemoteData = "http://gis-lab.info/data/zp-gis/soft/fires.php?function=get_rows_nasa&user=fire_usr&pass=J59DY&limit=5";
-        oUser = new HttpGetter(MainActivity.this, 1, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress);
-       	oUser.execute(sFullURL);
-	}
-	
-	protected void GetNasaData(boolean bShowProgress){
-        Location currentLocation = null;
-        String sLat = null, sLon = null;
-        if(mlocManager != null){
-	        currentLocation = mlocManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-	        if(currentLocation == null){
-	        	currentLocation = mlocManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-	        }
-	        
-	        if(currentLocation == null){
-	        	Toast.makeText(this, getString(R.string.noLocation), Toast.LENGTH_LONG).show();
-	        }
-	        else {
-	            sLat = Double.toString(currentLocation.getLatitude());
-	            sLon = Double.toString(currentLocation.getLongitude());
-	        }
-        }
-        
-	    SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-        String sURL = prefs.getString(SettingsActivity.KEY_PREF_SRV_NASA, getResources().getString(R.string.stDefaultServer));
-        String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_NASA_USER, "fire_usr");
-        String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_NASA_PASS, "J59DY");
-        int nDayInterval = prefs.getInt(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", 5);
-        int fetchRows = prefs.getInt(SettingsActivity.KEY_PREF_ROW_COUNT + "_int", 15);
-        int searchRadius = prefs.getInt(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS + "int", 5) * 1000;//meters
-        boolean searchByDate = prefs.getBoolean(SettingsActivity.KEY_PREF_SEARCH_CURR_DAY, false);
-
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date date = new Date();
-        long diff = 86400000L * nDayInterval;//1000 * 60 * 60 * 24 * 5;// 5 days  
-        date.setTime(date.getTime() - diff);
-        String dt = dateFormat.format(date);
-        
-        String sFullURL = sURL + "?function=get_rows_nasa&user=" + sLogin + "&pass=" + sPass+ "&limit=" + fetchRows + "&radius=" + searchRadius;//
-        if(searchByDate){
-        	sFullURL += "&date=" + dt;
-        }
-        if(sLat.length() > 0 && sLon.length() > 0){
-        	sFullURL += "&lat=" + sLat + "&lon=" + sLon;        	
-        }
-
-	    //String sRemoteData = "http://gis-lab.info/data/zp-gis/soft/fires.php?function=get_rows_nasa&user=fire_usr&pass=J59DY&limit=5";
-        //if(!oNasa.getStatus().equals(AsyncTask.Status.RUNNING) && !oNasa.getStatus().equals(AsyncTask.Status.PENDING))
-        oNasa = new HttpGetter(MainActivity.this, 2, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress);
-        oNasa.execute(sFullURL);
-    }
-	
-	protected void GetScanexData(){
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-		String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_USER, "new@kosmosnimki.ru");
-		String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_PASS, "test123");
-		//new HttpScanexLogin(MainActivity.this, 3, getResources().getString(R.string.stChecking), mFillDataHandler, true).execute(sLogin, sPass);
-		
-		mFireList.add(new FireItem(getBaseContext(), 3, 0, Calendar.getInstance().getTime(), 37, 55, -1, R.drawable.ic_scan, "http://ya.ru"));
-		mListAdapter.notifyDataSetChanged();
-	}
-	
-	protected void FillData(int nType, String sJSON){
-		int nIconId = 0;
-		if(nType == 1){//user
-			nIconId = R.drawable.ic_eye;		
-    		oUser = null;    	
-		}
-		else if(nType == 2){//nasa
-			nIconId = R.drawable.ic_nasa;
-			oNasa = null;
-		}
-		else if(nType == 3){//scanex
-			//nIconId = R.drawable.ic_nasa;
-			//oNasa = null;
-			String sCookie = sJSON; 
-	        new HttpGetter(MainActivity.this, 3, getResources().getString(R.string.stDownLoading), mFillDataHandler, true).execute("http://fires.kosmosnimki.ru/SAPI/Account/Get/", sCookie);
-		//
-			
-		}
-		
-	    try {
-	    	JSONObject jsonMainObject = new JSONObject(sJSON);
-	    	if(jsonMainObject.getBoolean("error")){
-	    	  String sMsg = jsonMainObject.getString("msg");
-	    	  Toast.makeText(this, sMsg, Toast.LENGTH_LONG).show();
-	    	  return;
-	      }
-	      
-	      JSONArray jsonArray = jsonMainObject.getJSONArray("rows");
-	      for (int i = 0; i < jsonArray.length(); i++) {
-	    	  JSONObject jsonObject = jsonArray.getJSONObject(i);
-	          //Log.i(ParseJSON.class.getName(), jsonObject.getString("text"));
-	    	  long nId = jsonObject.getLong("fid");
-	    	  String sDate = jsonObject.getString("date");
-	          DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	    	  Date dtFire = dateFormat.parse(sDate);
-	    	  double dfLat = jsonObject.getDouble("lat");
-	    	  double dfLon = jsonObject.getDouble("lon");
-	    	  double dfDist = jsonObject.getDouble("dist");
-
-	    	  boolean bAdd = true;
-	    	  for(int j = 0; j < mFireList.size(); j++){
-	    		  FireItem item = mFireList.get(j);
-	    		  if(item.GetId() == nId && item.GetType() == nType){
-	    			  bAdd = false;
-	    			  break;
-	    		  }
-	    	  }
-	    		  
-	    	  if(bAdd)	  
-	    		  mFireList.add(new FireItem(MainActivity.this, nType, nId, dtFire, dfLon, dfLat, dfDist, nIconId, ""));		
-	      }	 
-	      
-	    } catch (Exception e) {
-	      e.printStackTrace();
-	    }	
-	    
-	    Collections.sort(mFireList, new FireItemComparator());
-    
-	    mListAdapter.notifyDataSetChanged();
-	    
-	    //TODO:
-	    if(mFiled > mFilter){
-	    	completeRefresh();
-	    	mFiled = 0;
-	    }
-	    else{
-	    	mFiled += nType;
-	    }
-	}
-	
-	public class FireItemComparator implements Comparator<FireItem>
-	{
-	    public int compare(FireItem left, FireItem right) {
-	    	long nInterval = left.GetDate().getTime() - right.GetDate().getTime();
-	    	if(nInterval == 0){
-	    		nInterval = (long) (left.GetDistance() - right.GetDistance());
-	    	}
-	    	
-	    	if (nInterval < 0)
-	    		return 1;
-	    	else if (nInterval > 0)
-	    		return -1;
-	    	else
-	    		return 0;
-	    }
+		refreshItem.getActionView().clearAnimation();
+		refreshItem.setActionView(null);
 	}
 
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
-	 */
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		
-		outState.putParcelableArrayList("list", (ArrayList<? extends Parcelable>) mFireList);
-		outState.putBoolean("gotdata", bGotData);
-	}
+	public static class TabListener<T extends SherlockFragment> implements ActionBar.TabListener {
+		private final String mTag;
+		private ViewPager mPager;
 
-	@Override
-	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-		
-		CancelDownload();
-	}
-
-	@Override
-	protected void onPause() {
-		// TODO Auto-generated method stub
-		super.onPause();
-		
-		CancelDownload();
-	}
-	
-	protected void CancelDownload(){
-
-		if(oUser != null){
-			//oUser.DismissDowloadDialog();
-			oUser.Abort();
-			oUser = null;
+		public TabListener(String tag, ViewPager pager) {
+			mTag = tag;
+			mPager = pager;
 		}
 
-		if(oNasa != null){
-			//oNasa.DismissDowloadDialog();
-			oNasa.Abort();
-			oNasa = null;
+		public void onTabSelected(Tab tab, FragmentTransaction ft) {
+			int nTag = Integer.parseInt(mTag);
+			mPager.setCurrentItem(nTag);
 		}
-		
-		completeRefresh();
-	}
 
-	public boolean onNavigationItemSelected(int itemPosition, long itemId) {
-		
-		Editor editor = PreferenceManager.getDefaultSharedPreferences(MainActivity.this).edit();
-		editor.putInt("CURRENT_VIEW", itemPosition);
-		editor.commit();
-		
-		mPosition = itemPosition;
-		bGotData = false;
-		GetData(false);
+		public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+		}
 
-	    return true;
-	}
+		public void onTabReselected(Tab tab, FragmentTransaction ft) {
+		}
+	}	
+
+	public static class FragmentRollAdapter extends FragmentPagerAdapter {
+		ActionBar mActionBar;
+
+		public FragmentRollAdapter(FragmentManager fm) {
+			super(fm);
+		}
+
+		@Override
+		public int getCount() {
+			return NUM_ITEMS;
+		}
+
+		public void setActionBar( ActionBar bar ) {
+			mActionBar = bar;
+		}
+
+		@Override
+		public SherlockFragment getItem(int arg0) {
+			switch(arg0)
+			{
+			case 0:
+				NeighborFiresDataFragment frag0 = new NeighborFiresDataFragment();
+				return (SherlockFragment) frag0;
+			case 1:
+				ScanexDataFragment frag1 = new ScanexDataFragment();
+				return (SherlockFragment) frag1;
+			default:
+				return null;
+			}
+		}
+	}    
 }
 
 

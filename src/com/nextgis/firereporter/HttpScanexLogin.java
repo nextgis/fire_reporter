@@ -1,9 +1,8 @@
 /*******************************************************************************
-*
-* MainActivity
-* ---------------------------------------------------------
-* Report and view fires
-*
+ * Project:  Fire reporter
+ * Purpose:  Report and view fires
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
+ *******************************************************************************
 * Copyright (C) 2013 NextGIS (http://nextgis.ru)
 *
 * This source is free software; you can redistribute it and/or modify it under
@@ -32,20 +31,14 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.ClientPNames;
-import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.BasicHttpContext;
-import org.apache.http.protocol.HttpContext;
 
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -56,7 +49,6 @@ import android.os.Handler;
 import android.os.Message;
 
 public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
-    private String mContent;
     private Context mContext;
     private String mError = null;
     private ProgressDialog mDownloadDialog = null;

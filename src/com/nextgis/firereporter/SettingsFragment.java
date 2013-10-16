@@ -1,9 +1,8 @@
 /*******************************************************************************
-*
-* MainActivity
-* ---------------------------------------------------------
-* Report and view fires
-*
+ * Project:  Fire reporter
+ * Purpose:  Report and view fires
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
+ ******************************************************************************
 * Copyright (C) 2013 NextGIS (http://nextgis.ru)
 *
 * This source is free software; you can redistribute it and/or modify it under
@@ -198,12 +197,12 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 	    					checkScanConnPref.setSummary(R.string.stConnectionSucceeded);
 	    					checkScanConnPref.setIcon(R.drawable.ic_navigation_accept);
 	    					
-	    	        		new HttpGetter(getActivity(), 4, getResources().getString(R.string.stChecking), mReturnHandler, true).execute("http://fires.kosmosnimki.ru/SAPI/Account/Get/?CallBackName=777", sData);
+	    	        		new HttpGetter(getActivity(), 4, getResources().getString(R.string.stChecking), mReturnHandler, true).execute("http://fires.kosmosnimki.ru/SAPI/Account/Get/?CallBackName=" + GetFiresService.USER_ID, sData);
 	    				}
 	    			}
 	    			else if(nType == 4){//scanex detailes
 	    				try {
-	    					String sSubData = sData.substring(4, sData.length() - 1);
+	    					String sSubData = GetFiresService.removeJsonT(sData);
 							JSONObject rootobj = new JSONObject(sSubData);
 							String sStatus = rootobj.getString("Status");
 							if(sStatus.equals("OK")){

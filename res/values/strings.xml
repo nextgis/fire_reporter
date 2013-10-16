@@ -8,6 +8,8 @@
   <string name="tabView">View</string>
   <string name="tabSettings">Settings</string>
   <string name="tabAbout">About</string>
+  <string name="tabSubscription">Subscriptions</string>
+  <string name="tabNotification">Notifications</string>
 
   <!-- send tab -->
   <string name="sLatitude">Latitude</string>

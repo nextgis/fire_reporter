@@ -1,10 +1,10 @@
 /*******************************************************************************
-*
-* MainActivity
-* ---------------------------------------------------------
-* Report and view fires
-*
-* Copyright (C) 2013 NextGIS (http://nextgis.ru)
+ * Project:  Fire reporter
+ * Purpose:  Report and view fires
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
+ ******************************************************************************
+ *
+ * Copyright (C) 2013 NextGIS (http://nextgis.ru)
 *
 * This source is free software; you can redistribute it and/or modify it under
 * the terms of the GNU General Public License as published by the Free

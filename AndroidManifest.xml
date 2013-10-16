@@ -52,5 +52,13 @@
                 <action android:name="com.nextgis.firereporter.sendpos.action.STOP" />
             </intent-filter>
         </service>
+        <!-- android:process=":fr_receivefire"			 -->
+        <service android:name=".GetFiresService"
+			android:label="FireReporterReceiveService"    
+        	android:exported="false">
+            <intent-filter>
+                <action android:name="com.nextgis.firereporter.intent.action.SYNC" />
+            </intent-filter>
+        </service>        
     </application>
 </manifest>

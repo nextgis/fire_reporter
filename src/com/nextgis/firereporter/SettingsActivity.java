@@ -1,9 +1,8 @@
 /*******************************************************************************
-*
-* MainActivity
-* ---------------------------------------------------------
-* Report and view fires
-*
+ * Project:  Fire reporter
+ * Purpose:  Report and view fires
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
+ ******************************************************************************
 * Copyright (C) 2011,2013 NextGIS (http://nextgis.ru)
 *
 * This source is free software; you can redistribute it and/or modify it under
@@ -67,6 +66,8 @@ public class SettingsActivity extends SherlockPreferenceActivity {
     public static final String KEY_PREF_SRV_SCAN_USER_NAME = "scanex_user_name";
     public static final String KEY_PREF_SRV_SCAN_USER_PHONE = "scanex_user_phone";
 
+    public static final String KEY_PREF_UPDATE_DATA_TIME = "updatedata_time";
+    public static final String KEY_PREF_SERVICE_BATT_SAVE = "service_battary_save";
 	
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

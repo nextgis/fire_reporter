@@ -1,8 +1,8 @@
 /*******************************************************************************
-*
-* MainActivity
-* ---------------------------------------------------------
-* Report and view fires
+ * Project:  Fire reporter
+ * Purpose:  Report and view fires
+ * Author:   Dmitry Baryshnikov (aka Bishop), polimax@mail.ru
+ ******************************************************************************
 *
 * Copyright (C) 2011,2013 NextGIS (http://nextgis.ru)
 *
