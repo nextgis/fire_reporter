@@ -23,8 +23,6 @@
 *******************************************************************************/
 package com.nextgis.firereporter;
 
-import java.util.HashMap;
-
 import android.os.Parcel;
 import android.os.Parcelable;
 
@@ -41,6 +39,7 @@ public class SubscriptionItem implements Parcelable {
 		this.sLayerName = sLayerName;
 		this.sWKT = sWKT;
 		this.bSMSEnable = bSMSEnable;
+		
 	}		
 
 	public String GetTitle(){
@@ -106,5 +105,13 @@ public class SubscriptionItem implements Parcelable {
 	@Override
 	public String toString() {
 		return "" + nID;
+	}
+	
+	public boolean HasNews(){
+		return false;
+	}
+	
+	public void UpdateFromRemote(String sCookie){
+		
 	}
 }

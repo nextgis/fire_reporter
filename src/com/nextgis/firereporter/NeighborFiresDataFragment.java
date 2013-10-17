@@ -106,8 +106,6 @@ public class NeighborFiresDataFragment extends SherlockFragment implements Fires
 
     	View view = inflater.inflate(R.layout.neighbourfragment, container, false);
     
-     	mFireList = new ArrayList<FireItem>();
-     	
     	// load list
     	mListFireInfo = (ListView)view.findViewById(R.id.Mainlist);
     	// create new adapter

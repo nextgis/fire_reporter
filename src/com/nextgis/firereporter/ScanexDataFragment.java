@@ -27,6 +27,7 @@ package com.nextgis.firereporter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.List;
 
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
@@ -42,11 +43,16 @@ import android.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.Toast;
 
 public class ScanexDataFragment extends SherlockFragment implements FiresResultReceiver.Receiver {
 	protected FiresResultReceiver mReceiver;
+    protected SubscbesListAdapter mListAdapter;
+    protected ListView mListFireInfo;
+    protected List <SubscriptionItem> mSubscbesList;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -63,8 +69,9 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
 		mnFilter = prefs.getInt(MainActivity.PREF_CURRENT_FILTER, MainActivity.SRC_NASA | MainActivity.SRC_USER);
 		
         
-        mFireList = new ArrayList<FireItem>();
         */
+		
+		mSubscbesList = new ArrayList<SubscriptionItem>();
 		mReceiver = new FiresResultReceiver(new Handler());
         mReceiver.setReceiver(this);
         
@@ -105,42 +112,27 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
     	this.setRetainInstance(true);
 
     	View view = inflater.inflate(R.layout.scanexfragment, container, false);
-    	/*
-     	mFireList = new ArrayList<FireItem>();
      	
     	// load list
     	mListFireInfo = (ListView)view.findViewById(R.id.Mainlist);
     	// create new adapter
-    	mListAdapter = new FireListAdapter(getSherlockActivity(), mFireList);
+    	mListAdapter = new SubscbesListAdapter(getSherlockActivity(), mSubscbesList);
     	// set adapter to list view
     	mListFireInfo.setAdapter(mListAdapter);
 
 
-    	//TODO:
     	// implement event when an item on list view is selected
-    	/*
     	mListFireInfo.setOnItemClickListener(new OnItemClickListener(){
     		public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
     			// get the list adapter
-    			FireListAdapter appFireListAdapter = (FireListAdapter)parent.getAdapter();
+    			SubscbesListAdapter appListAdapter = (SubscbesListAdapter)parent.getAdapter();
     			// get selected item on the list
-    			FireItem item = (FireItem)appFireListAdapter.getItem(pos);
-    			// launch the selected application
-    			String sURL = item.GetUrl();
-    			if(sURL.length() > 0){
-    				Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(sURL));
-    				startActivity(browserIntent);
-    			}
+    			SubscriptionItem item = (SubscriptionItem)appListAdapter.getItem(pos);
+    			// TODO: open notes fragment     			
     		}
 
     	});
-    	*/
-    	/*if(savedInstanceState != null){
-    	mFireList = savedInstanceState.getParcelableArrayList("list");
-    	bGotData = savedInstanceState.getBoolean("gotdata");
-    }
 
-    */
     	return view;
     }
 
@@ -160,11 +152,6 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		/*case MainActivity.MENU_PLACE:
-            Intent intentSendReport = new Intent(getSherlockActivity(), SendReportActivity.class);
-            intentSendReport.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intentSendReport);
-        	return true; */
         case MainActivity.MENU_REFRESH:
         	StartService();
         	
@@ -180,10 +167,9 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
 			((MainActivity)getSherlockActivity()).refresh();
 			break;
 		case GetFiresService.SERVICE_SCANEXDATA:
-/*  		  	mFireList.add((FireItem) resultData.getParcelable("item"));		
-		    Collections.sort(mFireList, new FireItemComparator());
+			mSubscbesList.add((SubscriptionItem) resultData.getParcelable("item"));		
 		    mListAdapter.notifyDataSetChanged();
-*/			break;
+			break;
 		case GetFiresService.SERVICE_STOP:
 			((MainActivity)getSherlockActivity()).completeRefresh();
 			break;

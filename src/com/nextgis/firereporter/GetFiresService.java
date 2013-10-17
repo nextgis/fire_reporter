@@ -50,7 +50,6 @@ import android.os.ResultReceiver;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.Log;
-import android.widget.Toast;
 
 
 public class GetFiresService extends Service {
@@ -170,6 +169,7 @@ public class GetFiresService extends Service {
 		mLocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		mnCurrentExec = 0;
 		mmoFires = new HashMap<Integer, FireItem>();
+		mmoSubscriptions = new HashMap<Long, SubscriptionItem>(); 
 		mSanextCookieTime = new Time();
 		mSanextCookieTime.setToNow();
 		msScanexLoginCookie = new String("not_set");
@@ -364,6 +364,14 @@ public class GetFiresService extends Service {
 		mUserNasaReceiver.send(SERVICE_DATA, b);
 	}
 	
+	protected void SendScanexItem(SubscriptionItem item){
+		if(mScanexReceiver == null)
+			return;
+		Bundle b = new Bundle();
+		b.putParcelable("item", item);
+		mScanexReceiver.send(SERVICE_SCANEXDATA, b);
+	}
+	
 	protected void FillScanexData(int nType, String sJSON){
 		GetDataStoped();
 		try {
@@ -379,11 +387,19 @@ public class GetFiresService extends Service {
 					
 					if(mmoSubscriptions.get(nID) == null){
 						String sTitle = jsonObject.getString("Title");
-						String sLayerName = jsonObject.getString("sLayerName");
+						String sLayerName = jsonObject.getString("LayerName");
 						String sWKT = jsonObject.getString("wkt");
 						boolean bSMSEnable = jsonObject.getBoolean("SMSEnable");	
 						
-						mmoSubscriptions.put(nID, new SubscriptionItem(nID, sTitle, sLayerName, sWKT, bSMSEnable));
+						SubscriptionItem Item = new SubscriptionItem(nID, sTitle, sLayerName, sWKT, bSMSEnable);
+						mmoSubscriptions.put(nID, Item);
+						SendScanexItem(Item);
+						
+						//TODO: by id
+						//1. Add new items
+						//2. Do nothing for exist itmes
+						//3. Remove deleted items
+						
 						
 						//get notifications http://fires.kosmosnimki.ru/SAPI/Subscribe/GetData/55?dt=2013-08-06&CallBackName=44
 						
@@ -402,6 +418,7 @@ public class GetFiresService extends Service {
 							"http://maps.kosmosnimki.ru/TileService.ashx/apikeyV6IAK16QRG/mapT42E9?SERVICE=WMS&request=GetMap&version=1.3&layers=C7B2E6510209444E80673F3C37519F7E,FFE60CFA7DAF498381F811C08A5E8CF5,T42E9.A78AC25E0D924258B5AF40048C21F7E7_dt04102013&styles=&crs=EPSG:3395&transparent=FALSE&format=image/jpeg&width=460&height=460&bbox=6987987,8766592,7058307,8836912",
 							null]]
 						})*/
+						
 					}
 				}
 			}
