@@ -143,11 +143,24 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
             	Bundle resultData = msg.getData();
             	
             	boolean bHaveErr = resultData.getBoolean("error");
+            	int nType = resultData.getInt("src");
             	if(bHaveErr){
             		Toast.makeText(getActivity(), resultData.getString("err_msq"), Toast.LENGTH_LONG).show();
+            		if(nType == 1){//user
+            			checkUserConnPref.setSummary(R.string.stConnectionFailed);
+	    		    	checkUserConnPref.setIcon(R.drawable.ic_alerts_and_states_error);
+            		}
+            		else if(nType == 2){//nasa
+            			checkNasaConnPref.setSummary(R.string.stConnectionFailed);
+	    		        checkNasaConnPref.setIcon(R.drawable.ic_alerts_and_states_error);
+            		}
+            		else if(nType == 3){//scanex
+            			checkScanConnPref.setSummary(R.string.stConnectionFailed);
+	    		    	checkScanConnPref.setIcon(R.drawable.ic_alerts_and_states_error);
+            		}
             	}
-            	else{            		            	
-	    			int nType = resultData.getInt("src");
+            	else{           		            	
+	    			
 	    			String sData = resultData.getString("json");
 	    			if(nType == 1){//user
 	    		    	JSONObject jsonMainObject;
@@ -156,7 +169,8 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		    		    	if(jsonMainObject.getBoolean("error")){
 		    		    	  String sMsg = jsonMainObject.getString("msg");
 		    		    	  Toast.makeText(getActivity(), sMsg, Toast.LENGTH_LONG).show();
-		    		    	  checkUserConnPref.setSummary(R.string.sCheckDBConnSummary);
+		    		    	  checkUserConnPref.setSummary(R.string.stConnectionFailed);
+		    		    	  checkUserConnPref.setIcon(R.drawable.ic_alerts_and_states_error);
 		    		    	}
 		    		    	else {
 		    		    		checkUserConnPref.setSummary(R.string.stConnectionSucceeded);
@@ -175,7 +189,8 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		    		    	if(jsonMainObject.getBoolean("error")){
 		    		    	  String sMsg = jsonMainObject.getString("msg");
 		    		    	  Toast.makeText(getActivity(), sMsg, Toast.LENGTH_LONG).show();
-		    		    	  checkNasaConnPref.setSummary(R.string.sCheckDBConnSummary);
+		    		    	  checkNasaConnPref.setSummary(R.string.stConnectionFailed);
+		    		    	  checkNasaConnPref.setIcon(R.drawable.ic_alerts_and_states_error);
 		    		    	}
 		    		    	else {
 		    		    		checkNasaConnPref.setSummary(R.string.stConnectionSucceeded);
@@ -191,7 +206,8 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 	    				if(sData.isEmpty()){
 	    					String sMsg = "Connect failed";
 	    					Toast.makeText(getActivity(), sMsg, Toast.LENGTH_LONG).show();
-		    		    	checkScanConnPref.setSummary(R.string.sCheckDBConnSummary);
+		    		    	checkScanConnPref.setSummary(R.string.stConnectionFailed);
+		    		    	checkScanConnPref.setIcon(R.drawable.ic_alerts_and_states_error);
 	    				}
 	    				else{
 	    					checkScanConnPref.setSummary(R.string.stConnectionSucceeded);
@@ -266,7 +282,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
         checkScanConnPref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
             public boolean onPreferenceClick(Preference preference) {
             	//String sURL = mUserServerPref.getText() + "?function=test_conn_nasa&user=" + mUserServerUserPref.getText() + "&pass=" + mUserServerPassPref.getText();
-        		new HttpScanexLogin(getActivity(), 3, getResources().getString(R.string.stChecking), mReturnHandler, true).execute(mScanServerUserPref.getText(), mScanServerPassPref.getText());
+        		new ScanexHttpLogin(getActivity(), 3, getResources().getString(R.string.stChecking), mReturnHandler, true).execute(mScanServerUserPref.getText(), mScanServerPassPref.getText());
 				return true;
             }
         });    

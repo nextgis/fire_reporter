@@ -24,54 +24,28 @@
 *******************************************************************************/
 package com.nextgis.firereporter;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-
 import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import com.nextgis.firereporter.NeighborFiresDataFragment.FireItemComparator;
-
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentTransaction;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ListView;
 import android.widget.Toast;
 
 public class ScanexDataFragment extends SherlockFragment implements FiresResultReceiver.Receiver {
 	protected FiresResultReceiver mReceiver;
-    protected SubscbesListAdapter mListAdapter;
-    protected ListView mListFireInfo;
-    protected List <SubscriptionItem> mSubscbesList;
+	protected boolean mbTwoPanelMode;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		setHasOptionsMenu(true);
 		
-		//get subscriprions http://fires.kosmosnimki.ru/SAPI/Subscribe/Get/?CallBackName=44
-		//get subscritption by id http://fires.kosmosnimki.ru/SAPI/Subscribe/Get/6?CallBackName=44
-		//add subscription http://fires.kosmosnimki.ru/SAPI/Subscribe/Add?tItle=«‡„ÓÎÓ‚ÓÍ&typeReport=1&layerName=»Ãﬂ_—ÀŒﬂ&wkt=√≈ŒÃ≈“–»ﬂ_WKT&CallBackName=44 
-		//update subscription http://fires.kosmosnimki.ru/SAPI/Subscribe/Update/?CallBackName=44?id=6
-		//delete subscriprion http://fires.kosmosnimki.ru/SAPI/Subscribe/Delete/6?CallBackName=44
-		
-		/*
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
-		mnFilter = prefs.getInt(MainActivity.PREF_CURRENT_FILTER, MainActivity.SRC_NASA | MainActivity.SRC_USER);
-		
-        
-        */
-		
-		mSubscbesList = new ArrayList<SubscriptionItem>();
 		mReceiver = new FiresResultReceiver(new Handler());
         mReceiver.setReceiver(this);
         
@@ -87,21 +61,20 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
 	}
 
 	@Override
-	public void onDestroy() {
-		StopService();
-		super.onDestroy();
-	}
-
-	@Override
 	public void onResume() {
 
         mReceiver.setReceiver(this);
-
-        final Intent intent = new Intent(MainActivity.INTENT_NAME, null, getSherlockActivity(), GetFiresService.class);
-        intent.putExtra("receiver_scanex", mReceiver);
-        intent.putExtra("command", GetFiresService.SERVICE_SCANEXDATA);
         
-        getSherlockActivity().startService(intent);
+		ScanexSubscibesFragment ListFragment = (ScanexSubscibesFragment) getChildFragmentManager().findFragmentByTag("LIST");
+        if(ListFragment != null){
+        	ListFragment.clear();        
+
+        	final Intent intent = new Intent(MainActivity.INTENT_NAME, null, getSherlockActivity(), GetFiresService.class);
+        	intent.putExtra(GetFiresService.RECEIVER_SCANEX, mReceiver);
+        	intent.putExtra(GetFiresService.COMMAND, GetFiresService.SERVICE_SCANEXDATA);
+        
+        	getSherlockActivity().startService(intent);
+        }
 
 		super.onResume();
 	}
@@ -110,29 +83,42 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
     	
     	this.setRetainInstance(true);
+    	
+    	View view = inflater.inflate(R.layout.scanexview, container, false);
+   	
+        FragmentTransaction fragmentTransaction = getChildFragmentManager().beginTransaction();
+   	
+    	DisplayMetrics metrics = new DisplayMetrics();
+    	getSherlockActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
+    	
+    	if(getChildFragmentManager().findFragmentByTag("LIST") == null){
+    		fragmentTransaction.add(R.id.scanex_container_list, new ScanexSubscibesFragment(), "LIST");
+    	}
+    	
+   		ScanexNotificationsFragment NotesFr = (ScanexNotificationsFragment) getChildFragmentManager().findFragmentByTag("DETAILES");
 
-    	View view = inflater.inflate(R.layout.scanexfragment, container, false);
-     	
-    	// load list
-    	mListFireInfo = (ListView)view.findViewById(R.id.Mainlist);
-    	// create new adapter
-    	mListAdapter = new SubscbesListAdapter(getSherlockActivity(), mSubscbesList);
-    	// set adapter to list view
-    	mListFireInfo.setAdapter(mListAdapter);
+    	if(metrics.widthPixels > 1000){
+    		mbTwoPanelMode = true;
 
-
-    	// implement event when an item on list view is selected
-    	mListFireInfo.setOnItemClickListener(new OnItemClickListener(){
-    		public void onItemClick(AdapterView<?> parent, View view, int pos, long id) {
-    			// get the list adapter
-    			SubscbesListAdapter appListAdapter = (SubscbesListAdapter)parent.getAdapter();
-    			// get selected item on the list
-    			SubscriptionItem item = (SubscriptionItem)appListAdapter.getItem(pos);
-    			// TODO: open notes fragment     			
-    		}
-
-    	});
-
+            if(NotesFr == null){
+            	fragmentTransaction.add(R.id.scanex_container_detailes, new ScanexNotificationsFragment(), "DETAILES");
+            }
+            //else{
+            //	fragmentTransaction.show(NotesFr);
+            //}  
+    	}
+    	else
+    	{
+    		mbTwoPanelMode = false;
+            if(NotesFr != null){
+            	fragmentTransaction.remove(NotesFr);
+            	//fragmentTransaction.hide(NotesFr);
+            }
+    	}
+ 	
+        fragmentTransaction.commit(); 
+        //getChildFragmentManager().executePendingTransactions();
+        
     	return view;
     }
 
@@ -167,42 +153,58 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
 			((MainActivity)getSherlockActivity()).refresh();
 			break;
 		case GetFiresService.SERVICE_SCANEXDATA:
-			mSubscbesList.add((SubscriptionItem) resultData.getParcelable("item"));		
-		    mListAdapter.notifyDataSetChanged();
+			ScanexSubscibesFragment ListFragment = (ScanexSubscibesFragment) getChildFragmentManager().findFragmentByTag("LIST");
+			if(ListFragment != null){				
+				int nType = resultData.getInt(GetFiresService.TYPE);
+				if(nType == GetFiresService.SCANEX_SUBSCRIPTION){
+					ListFragment.add((ScanexSubscriptionItem) resultData.getParcelable(GetFiresService.ITEM));
+				}
+				else if(nType == GetFiresService.SCANEX_NOTIFICATION){
+					long nSubID = resultData.getLong(GetFiresService.SUBSCRIPTION_ID);
+					//long nNoteID = resultData.getLong("note_id");
+					ScanexNotificationItem item = (ScanexNotificationItem) resultData.getParcelable(GetFiresService.ITEM);
+					ListFragment.add(nSubID, item);
+					
+					ScanexNotificationsFragment NotesFragment = (ScanexNotificationsFragment) getChildFragmentManager().findFragmentByTag("DETAILES");
+					if(NotesFragment != null){
+						NotesFragment.add(item);
+					}
+				}
+			}
 			break;
 		case GetFiresService.SERVICE_STOP:
 			((MainActivity)getSherlockActivity()).completeRefresh();
 			break;
 		case GetFiresService.SERVICE_ERROR:
-			Toast.makeText(getSherlockActivity(), resultData.getString("err_msq"), Toast.LENGTH_LONG).show();
+			Toast.makeText(getSherlockActivity(), resultData.getString(GetFiresService.ERR_MSG), Toast.LENGTH_LONG).show();
 			break;
 		}		
 	}
 	
 	protected void StartService(){
         final Intent intent = new Intent(MainActivity.INTENT_NAME, null, getSherlockActivity(), GetFiresService.class);
-        intent.putExtra("receiver_scanex", mReceiver);
-        intent.putExtra("command", GetFiresService.SERVICE_SCANEXSTART);
+        intent.putExtra(GetFiresService.RECEIVER_SCANEX, mReceiver);
+        intent.putExtra(GetFiresService.COMMAND, GetFiresService.SERVICE_SCANEXSTART);
         
         getSherlockActivity().startService(intent);
 	}
 	
-	protected void StopService(){
-        final Intent intent = new Intent(MainActivity.INTENT_NAME, null, getSherlockActivity(), GetFiresService.class);
-        intent.putExtra("command", GetFiresService.SERVICE_STOP);
-        
-        getSherlockActivity().startService(intent);
-	}
-	
-	
-/*	protected void GetScanexData(){
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
-		String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_USER, "new@kosmosnimki.ru");
-		String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_PASS, "test123");
-		//new HttpScanexLogin(MainActivity.this, 3, getResources().getString(R.string.stChecking), mFillDataHandler, true).execute(sLogin, sPass);
+	public void onSelectSubscribe(ScanexSubscriptionItem item) {
+		if(mbTwoPanelMode){
+			ScanexNotificationsFragment NotesFragment = (ScanexNotificationsFragment) getChildFragmentManager().findFragmentByTag("DETAILES");
+			if(NotesFragment != null){
+				NotesFragment.addSubscriptionId(item.GetId());
+				NotesFragment.add(item.GetItems());
+			}
+		}
+		else{			
+            Intent intent = new Intent(getSherlockActivity(), ScanexNotificationsActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.putExtra(GetFiresService.ITEM, item);
+            intent.putExtra(GetFiresService.SUBSCRIPTION_ID, item.GetId());
+            startActivity(intent);
+		}
 		
-		mFireList.add(new FireItem(getBaseContext(), 3, 0, Calendar.getInstance().getTime(), 37, 55, -1, R.drawable.ic_scan, "http://ya.ru"));
-		mListAdapter.notifyDataSetChanged();
 	}
-*/
+	
 }

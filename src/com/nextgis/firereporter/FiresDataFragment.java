@@ -46,7 +46,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
-public class NeighborFiresDataFragment extends SherlockFragment implements FiresResultReceiver.Receiver {
+public class FiresDataFragment extends SherlockFragment implements FiresResultReceiver.Receiver {
 
     protected FireListAdapter mListAdapter;
     protected ListView mListFireInfo;
@@ -89,10 +89,11 @@ public class NeighborFiresDataFragment extends SherlockFragment implements Fires
 	public void onResume() {
 //		mReceiver = new FiresResultReceiver(new Handler());
         mReceiver.setReceiver(this);
+        mFireList.clear();
 
         final Intent intent = new Intent(MainActivity.INTENT_NAME, null, getSherlockActivity(), GetFiresService.class);
-        intent.putExtra("receiver", mReceiver);
-        intent.putExtra("command", GetFiresService.SERVICE_DATA);
+        intent.putExtra(GetFiresService.RECEIVER, mReceiver);
+        intent.putExtra(GetFiresService.COMMAND, GetFiresService.SERVICE_DATA);
         
         getSherlockActivity().startService(intent);
         
@@ -133,12 +134,6 @@ public class NeighborFiresDataFragment extends SherlockFragment implements Fires
 
     	});
     	*/
-    	/*if(savedInstanceState != null){
-    	mFireList = savedInstanceState.getParcelableArrayList("list");
-    	bGotData = savedInstanceState.getBoolean("gotdata");
-    }
-
-    */
     	return view;
     }
 
@@ -170,16 +165,16 @@ public class NeighborFiresDataFragment extends SherlockFragment implements Fires
 	
 	protected void StartService(){
         final Intent intent = new Intent(MainActivity.INTENT_NAME, null, getSherlockActivity(), GetFiresService.class);
-        intent.putExtra("receiver", mReceiver);
-        intent.putExtra("command", GetFiresService.SERVICE_START);
-        intent.putExtra("src", mnFilter);
+        intent.putExtra(GetFiresService.RECEIVER, mReceiver);
+        intent.putExtra(GetFiresService.COMMAND, GetFiresService.SERVICE_START);
+        intent.putExtra(GetFiresService.SOURCE, mnFilter);
         
         getSherlockActivity().startService(intent);
 	}
 	
 	protected void StopService(){
         final Intent intent = new Intent(MainActivity.INTENT_NAME, null, getSherlockActivity(), GetFiresService.class);
-        intent.putExtra("command", GetFiresService.SERVICE_STOP);
+        intent.putExtra(GetFiresService.COMMAND, GetFiresService.SERVICE_STOP);
         
         getSherlockActivity().startService(intent);
 	}
@@ -208,7 +203,7 @@ public class NeighborFiresDataFragment extends SherlockFragment implements Fires
 			((MainActivity)getSherlockActivity()).refresh();
 			break;
 		case GetFiresService.SERVICE_DATA:
-  		  	mFireList.add((FireItem) resultData.getParcelable("item"));		
+  		  	mFireList.add((FireItem) resultData.getParcelable(GetFiresService.ITEM));		
 		    Collections.sort(mFireList, new FireItemComparator());
 		    mListAdapter.notifyDataSetChanged();
 			break;
@@ -216,7 +211,7 @@ public class NeighborFiresDataFragment extends SherlockFragment implements Fires
 			((MainActivity)getSherlockActivity()).completeRefresh();
 			break;
 		case GetFiresService.SERVICE_ERROR:
-			Toast.makeText(getSherlockActivity(), resultData.getString("err_msq"), Toast.LENGTH_LONG).show();
+			Toast.makeText(getSherlockActivity(), resultData.getString(GetFiresService.ERR_MSG), Toast.LENGTH_LONG).show();
 			break;
 		}		
 	}

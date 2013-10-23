@@ -32,6 +32,9 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 
 import android.app.ProgressDialog;
@@ -93,7 +96,17 @@ public class HttpGetter extends AsyncTask<String, Void, Void> {
 	        		httpget.setHeader("Cookie", urls[1]);
 	        	}
 	        	
-	            HttpClient Client = new DefaultHttpClient();
+	        	//TODO: move timeouts to parameters
+	            HttpParams httpParameters = new BasicHttpParams();
+	            int timeoutConnection = 1500;
+	            HttpConnectionParams.setConnectionTimeout(httpParameters, timeoutConnection);
+	            // Set the default socket timeout (SO_TIMEOUT) 
+	            // in milliseconds which is the timeout for waiting for data.
+	            int timeoutSocket = 3000;
+	            HttpConnectionParams.setSoTimeout(httpParameters, timeoutSocket);         
+
+	            HttpClient Client = new DefaultHttpClient(httpParameters);
+
 	            HttpResponse response = Client.execute(httpget);	            
 	            //ResponseHandler<String> responseHandler = new BasicResponseHandler();
 	            //mContent = Client.execute(httpget, responseHandler);
@@ -101,15 +114,16 @@ public class HttpGetter extends AsyncTask<String, Void, Void> {
 	                        
 	            Bundle bundle = new Bundle();
 				if(response.getStatusLine().getStatusCode() == HttpStatus.SC_OK){
-					bundle.putBoolean("error", false);
+					bundle.putBoolean(GetFiresService.ERROR, false);
 					mContent = EntityUtils.toString(entity);
-		            bundle.putString("json", mContent);
+		            bundle.putString(GetFiresService.JSON, mContent);
 				}
 				else{
-					bundle.putBoolean("error", true);
+					bundle.putBoolean(GetFiresService.ERROR, true);					
+					bundle.putString(GetFiresService.ERR_MSG, response.getStatusLine().getStatusCode() + ": " + response.getStatusLine().getReasonPhrase());
 				}				
 				
-	            bundle.putInt("src", mnType);
+	            bundle.putInt(GetFiresService.SOURCE, mnType);
 	            
 	            Message msg = new Message();
 	            msg.setData(bundle);
@@ -127,9 +141,9 @@ public class HttpGetter extends AsyncTask<String, Void, Void> {
         }
         else {
             Bundle bundle = new Bundle();
-            bundle.putBoolean("error", true);
-            bundle.putString("err_msq", mContext.getString(R.string.stNetworkUnreach));
-            bundle.putInt("src", mnType);
+            bundle.putBoolean(GetFiresService.ERROR, true);
+            bundle.putString(GetFiresService.ERR_MSG, mContext.getString(R.string.stNetworkUnreach));
+            bundle.putInt(GetFiresService.SOURCE, mnType);
             
             Message msg = new Message();
             msg.setData(bundle);
@@ -146,9 +160,9 @@ public class HttpGetter extends AsyncTask<String, Void, Void> {
     	DismissDowloadDialog();
         if (mError != null) {
         	Bundle bundle = new Bundle();
-            bundle.putBoolean("error", true);
-            bundle.putString("err_msq", mError);
-            bundle.putInt("src", mnType);
+            bundle.putBoolean(GetFiresService.ERROR, true);
+            bundle.putString(GetFiresService.ERR_MSG, mError);
+            bundle.putInt(GetFiresService.SOURCE, mnType);
             
             Message msg = new Message();
             msg.setData(bundle);

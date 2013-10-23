@@ -23,10 +23,20 @@
 *******************************************************************************/
 package com.nextgis.firereporter;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -71,11 +81,31 @@ public class GetFiresService extends Service {
 	public final static int SERVICE_UPDATE = 6;
 	public final static int SERVICE_SCANEXSTART = 7;
 	public final static int SERVICE_SCANEXDATA = 8;
+	public final static int SERVICE_SCANEXDATAUPDATE = 9;
+
+	public final static int SCANEX_SUBSCRIPTION = 1;
+	public final static int SCANEX_NOTIFICATION = 2;
+
+	protected final static String SCANEX_FILE = "scanex.json"; 
+	public final static String SCANEX_API = "http://fires.kosmosnimki.ru/SAPI"; 
+
+	public final static String SUBSCRIPTION_ID = "subscription_id"; 
+	public final static String NOTIFICATION_ID = "notification_id";
+	public final static String COMMAND = "command";
+	public final static String ITEM = "item";
+	public final static String RECEIVER_SCANEX = "receiver_scanex";
+	public final static String RECEIVER = "receiver";
+	public final static String TYPE = "type";
+	public final static String ERR_MSG = "err_msq";
+	public final static String SOURCE = "source";
+	public final static String ERROR = "error";
+	public final static String JSON = "json";
 	
 	protected Time mSanextCookieTime;
 	protected final static int USER_ID = 777;
+
 	
-	protected Map<Long, SubscriptionItem> mmoSubscriptions;
+	protected Map<Long, ScanexSubscriptionItem> mmoSubscriptions;
 
     
 	@Override
@@ -96,8 +126,11 @@ public class GetFiresService extends Service {
 		Log.d(MainActivity.TAG, "Received start id " + startId + ": " + intent);
 		super.onStartCommand(intent, flags, startId);
 
-		int nCommnad = intent.getIntExtra("command", SERVICE_START);
-		mnFilter = intent.getIntExtra("src", MainActivity.SRC_NASA | MainActivity.SRC_USER);
+		if(intent == null)
+			return START_STICKY;
+		
+		int nCommnad = intent.getIntExtra(COMMAND, SERVICE_START);
+		mnFilter = intent.getIntExtra(SOURCE, MainActivity.SRC_NASA | MainActivity.SRC_USER);
 		
 		SharedPreferences prefs = getSharedPreferences(MainActivity.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS);
 		long nUpdateInterval = prefs.getLong(SettingsActivity.KEY_PREF_UPDATE_DATA_TIME + "_long",  DateUtils.MINUTE_IN_MILLIS); //15
@@ -105,7 +138,7 @@ public class GetFiresService extends Service {
 		
 		switch(nCommnad){
 		case SERVICE_START:
-			mUserNasaReceiver = intent.getParcelableExtra("receiver");		
+			mUserNasaReceiver = intent.getParcelableExtra(RECEIVER);		
 
 			if(mnCurrentExec < 1){
 				mUserNasaReceiver.send(SERVICE_START, new Bundle());
@@ -125,7 +158,8 @@ public class GetFiresService extends Service {
 			ScheduleNextUpdate(this, nCommnad, nUpdateInterval, bEnergyEconomy);
 			break;
 		case SERVICE_SCANEXSTART:
-			mScanexReceiver = intent.getParcelableExtra("receiver_scanex");		
+			
+			mScanexReceiver = intent.getParcelableExtra(RECEIVER_SCANEX);		
 
 			if(mnCurrentExec < 1){
 				mScanexReceiver.send(SERVICE_SCANEXSTART, new Bundle());
@@ -147,18 +181,32 @@ public class GetFiresService extends Service {
 			stopSelf();
 			break;
 		case SERVICE_UPDATE:
-			mUserNasaReceiver = intent.getParcelableExtra("receiver");		
-			mScanexReceiver = intent.getParcelableExtra("receiver_scanex");		
+			mUserNasaReceiver = intent.getParcelableExtra(RECEIVER);		
+			mScanexReceiver = intent.getParcelableExtra(RECEIVER_SCANEX);		
 			break;
 		case SERVICE_DATA:
-			mUserNasaReceiver = intent.getParcelableExtra("receiver");		
+			mUserNasaReceiver = intent.getParcelableExtra(RECEIVER);		
 			for(FireItem item : mmoFires.values()){
 				SendItem(item);
 			}
 			break;
 		case SERVICE_SCANEXDATA:
-			mScanexReceiver = intent.getParcelableExtra("receiver_scanex");		
-			GetScanexData(false);
+			mScanexReceiver = intent.getParcelableExtra(RECEIVER_SCANEX);		
+			for(ScanexSubscriptionItem Item : mmoSubscriptions.values()){
+				SendScanexItem(Item);
+			}
+
+			break;
+		case SERVICE_SCANEXDATAUPDATE:
+			long nSubscirbeId = intent.getLongExtra(SUBSCRIPTION_ID, -1);
+			long nNotificationId = intent.getLongExtra(NOTIFICATION_ID, -1);
+			ScanexSubscriptionItem subscribe = mmoSubscriptions.get(nSubscirbeId);
+			if(subscribe != null){
+				ScanexNotificationItem notification = subscribe.GetItems().get(nNotificationId);
+				if(notification != null){
+					notification.setWatched(true);
+				}
+			}
 			break;
 		}
 		
@@ -169,7 +217,9 @@ public class GetFiresService extends Service {
 		mLocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		mnCurrentExec = 0;
 		mmoFires = new HashMap<Integer, FireItem>();
-		mmoSubscriptions = new HashMap<Long, SubscriptionItem>(); 
+
+		LoadScanexData();
+		
 		mSanextCookieTime = new Time();
 		mSanextCookieTime.setToNow();
 		msScanexLoginCookie = new String("not_set");
@@ -180,13 +230,13 @@ public class GetFiresService extends Service {
     	    	mnCurrentExec--;    	    	
     	    	
     	    	Bundle resultData = msg.getData();
-    	    	boolean bHaveErr = resultData.getBoolean("error");
+    	    	boolean bHaveErr = resultData.getBoolean(ERROR);
     	    	if(bHaveErr){
-    	    		SendError(resultData.getString("err_msq"));
+    	    		SendError(resultData.getString(ERR_MSG));
     	    	}
     	    	else{
-    	    		int nType = resultData.getInt("src");
-	    			String sData = resultData.getString("json");
+    	    		int nType = resultData.getInt(SOURCE);
+	    			String sData = resultData.getString(JSON);
     	    		switch(nType){
     	    		case 3:
     	    			FillScanexData(nType, sData);
@@ -212,10 +262,10 @@ public class GetFiresService extends Service {
 			return;
 
 		Intent intent = new Intent(MainActivity.INTENT_NAME);	
-        intent.putExtra("receiver", mUserNasaReceiver);
-        intent.putExtra("receiver_scanex", mScanexReceiver);
-        intent.putExtra("command", nCommand);
-        intent.putExtra("src", mnFilter);
+        intent.putExtra(RECEIVER, mUserNasaReceiver);
+        intent.putExtra(RECEIVER_SCANEX, mScanexReceiver);
+        intent.putExtra(COMMAND, nCommand);
+        intent.putExtra(SOURCE, mnFilter);
 
 		PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -258,7 +308,7 @@ public class GetFiresService extends Service {
         String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_USER_PASS, "8QdA4");
         int nDayInterval = prefs.getInt(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", 5);
         int fetchRows = prefs.getInt(SettingsActivity.KEY_PREF_ROW_COUNT + "_int", 15);
-        int searchRadius = prefs.getInt(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS + "int", 5) * 1000;//meters
+        int searchRadius = prefs.getInt(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS + "_int", 5) * 1000;//meters
         boolean searchByDate = prefs.getBoolean("search_current_date", false);
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -305,7 +355,7 @@ public class GetFiresService extends Service {
         String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_NASA_PASS, "J59DY");
         int nDayInterval = prefs.getInt(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", 5);
         int fetchRows = prefs.getInt(SettingsActivity.KEY_PREF_ROW_COUNT + "_int", 15);
-        int searchRadius = prefs.getInt(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS + "int", 5) * 1000;//meters
+        int searchRadius = prefs.getInt(SettingsActivity.KEY_PREF_FIRE_SEARCH_RADIUS + "_int", 5) * 1000;//meters
         boolean searchByDate = prefs.getBoolean(SettingsActivity.KEY_PREF_SEARCH_CURR_DAY, false);
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -332,7 +382,8 @@ public class GetFiresService extends Service {
 			if(mUserNasaReceiver != null){
 				mUserNasaReceiver.send(SERVICE_STOP, new Bundle());			
 			}
-			else if(mScanexReceiver != null){
+
+			if(mScanexReceiver != null){
 				mScanexReceiver.send(SERVICE_STOP, new Bundle());			
 			}
 		}
@@ -341,7 +392,7 @@ public class GetFiresService extends Service {
 	protected void SendError(String sErrMsg){
 		if(mUserNasaReceiver != null){
 			Bundle b = new Bundle();
-			b.putString("err_msq", sErrMsg);
+			b.putString(ERR_MSG, sErrMsg);
 			mUserNasaReceiver.send(SERVICE_ERROR, b);
 		
 			GetDataStoped();
@@ -349,7 +400,7 @@ public class GetFiresService extends Service {
 		
 		if(mScanexReceiver != null){
 			Bundle b = new Bundle();
-			b.putString("err_msq", sErrMsg);
+			b.putString(ERR_MSG, sErrMsg);
 			mScanexReceiver.send(SERVICE_ERROR, b);	
 			
 			GetDataStoped();
@@ -360,15 +411,17 @@ public class GetFiresService extends Service {
 		if(mUserNasaReceiver == null)
 			return;
 		Bundle b = new Bundle();
-		b.putParcelable("item", item);
+		b.putParcelable(ITEM, item);
 		mUserNasaReceiver.send(SERVICE_DATA, b);
 	}
 	
-	protected void SendScanexItem(SubscriptionItem item){
+	protected void SendScanexItem(ScanexSubscriptionItem item){
 		if(mScanexReceiver == null)
 			return;
 		Bundle b = new Bundle();
-		b.putParcelable("item", item);
+		b.putLong(SUBSCRIPTION_ID, item.GetId());
+		b.putInt(TYPE, SCANEX_SUBSCRIPTION);
+		b.putParcelable(ITEM, item);
 		mScanexReceiver.send(SERVICE_SCANEXDATA, b);
 	}
 	
@@ -380,47 +433,37 @@ public class GetFiresService extends Service {
 			String sStatus = rootobj.getString("Status");
 			if(sStatus.equals("OK")){
 				//6. store data to db and in map
+				List<Long> naIDs = new ArrayList<Long>(); 
 				JSONArray oResults = rootobj.getJSONArray("Result");
 				for (int i = 0; i < oResults.length(); i++) {
 					JSONObject jsonObject = oResults.getJSONObject(i);
 					long nID = jsonObject.getLong("ID");
-					
-					if(mmoSubscriptions.get(nID) == null){
+					naIDs.add(nID);
+						
+					// Add new items
+
+					if(!mmoSubscriptions.containsKey(nID)){
 						String sTitle = jsonObject.getString("Title");
 						String sLayerName = jsonObject.getString("LayerName");
 						String sWKT = jsonObject.getString("wkt");
 						boolean bSMSEnable = jsonObject.getBoolean("SMSEnable");	
 						
-						SubscriptionItem Item = new SubscriptionItem(nID, sTitle, sLayerName, sWKT, bSMSEnable);
+						ScanexSubscriptionItem Item = new ScanexSubscriptionItem(this, nID, sTitle, sLayerName, sWKT, bSMSEnable);
 						mmoSubscriptions.put(nID, Item);
-						SendScanexItem(Item);
-						
-						//TODO: by id
-						//1. Add new items
-						//2. Do nothing for exist itmes
-						//3. Remove deleted items
-						
-						
-						//get notifications http://fires.kosmosnimki.ru/SAPI/Subscribe/GetData/55?dt=2013-08-06&CallBackName=44
-						
-						/*44({
-							"Status": "OK",
-							"ErrorInfo": "",
-							"Result": [[1306601,
-							"61.917, 63.090",
-							68,
-							27.4,
-							"\u003ca href=\u0027http://maps.kosmosnimki.ru/TileService.ashx/apikeyV6IAK16QRG/mapT42E9?SERVICE=WMS&request=GetMap&version=1.3&layers=C7B2E6510209444E80673F3C37519F7E,FFE60CFA7DAF498381F811C08A5E8CF5,T42E9.A78AC25E0D924258B5AF40048C21F7E7_dt04102013&styles=&crs=EPSG:3395&transparent=FALSE&format=image/jpeg&width=460&height=460&bbox=6987987,8766592,7058307,8836912\u0027\u003e \u003cimg src=\u0027http://maps.kosmosnimki.ru/TileService.ashx/apikeyV6IAK16QRG/mapT42E9?SERVICE=WMS&request=GetMap&version=1.3&layers=C7B2E6510209444E80673F3C37519F7E,FFE60CFA7DAF498381F811C08A5E8CF5,T42E9.A78AC25E0D924258B5AF40048C21F7E7_dt04102013&styles=&crs=EPSG:3395&transparent=FALSE&format=image/jpeg&width=100&height=100&bbox=6987987,8766592,7058307,8836912\u0027 width=\u0027{4}\u0027 height=\u0027{5}\u0027 /\u003e\u003c/a\u003e",
-							"\u003ca href=\u0027http://fires.kosmosnimki.ru/?x=63.09&y=61.917&z=11&dt=04.10.2013\u0027 target=\"_blank\"\u003eView on the map\u003c/a\u003e",
-							"Fire",
-							"Агириш",
-							"\/Date(1380859500000)\/",
-							"http://maps.kosmosnimki.ru/TileService.ashx/apikeyV6IAK16QRG/mapT42E9?SERVICE=WMS&request=GetMap&version=1.3&layers=C7B2E6510209444E80673F3C37519F7E,FFE60CFA7DAF498381F811C08A5E8CF5,T42E9.A78AC25E0D924258B5AF40048C21F7E7_dt04102013&styles=&crs=EPSG:3395&transparent=FALSE&format=image/jpeg&width=460&height=460&bbox=6987987,8766592,7058307,8836912",
-							null]]
-						})*/
-						
+						SendScanexItem(Item);						
+					}
+
+					mmoSubscriptions.get(nID).UpdateFromRemote(this, msScanexLoginCookie);
+					
+				}
+				
+				// Remove deleted items
+				for(Long id : mmoSubscriptions.keySet()){
+					if(!naIDs.contains(id)){
+						mmoSubscriptions.remove(id);
 					}
 				}
+				StoreScanexData();
 			}
 			else
 			{
@@ -445,7 +488,7 @@ public class GetFiresService extends Service {
 			if(jsonMainObject.has("rows") && !jsonMainObject.isNull("rows")){
 	
 				JSONArray jsonArray = jsonMainObject.getJSONArray("rows");
-				for (int i = 0; i < jsonArray.length(); i++) {
+				for(int i = 0; i < jsonArray.length(); i++) {
 					JSONObject jsonObject = jsonArray.getJSONObject(i);
 					//Log.i(ParseJSON.class.getName(), jsonObject.getString("text"));
 					long nId = jsonObject.getLong("fid");
@@ -470,7 +513,7 @@ public class GetFiresService extends Service {
 					double dfLon = jsonObject.getDouble("lon");
 					double dfDist = jsonObject.getDouble("dist");
 	
-					FireItem item = new FireItem(this, nType, nId, dtFire, dfLon, dfLat, dfDist, nIconId, "");
+					FireItem item = new FireItem(this, nType, nId, dtFire, dfLon, dfLat, dfDist, nIconId);
 					mmoFires.put(nKey, item);
 					
 					SendItem(item);
@@ -482,11 +525,8 @@ public class GetFiresService extends Service {
 	}	
 	
 	protected void GetScanexData(boolean bShowProgress){
-		//1. If data present in map send them
-		//2. if data not present - check if data exist in db
-		//3. load data from db and send it to client
-		//4. update data from internet
-		//4.1 if no login cookie - get it
+		if(mmoSubscriptions.size() > 0)
+			StoreScanexData();
 		//2 hours = 120 min = 7200 sec = 7200000
 		Time testTime = new Time();
 		testTime.setToNow();
@@ -497,15 +537,104 @@ public class GetFiresService extends Service {
 	        String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_USER, "new@kosmosnimki.ru");
 	        String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_PASS, "test123");
 	        msScanexLoginCookie = "setting";
-			new HttpScanexLogin(this, 4, getResources().getString(R.string.stChecking), mFillDataHandler, bShowProgress).execute(sLogin, sPass);
+			new ScanexHttpLogin(this, 4, getResources().getString(R.string.stChecking), mFillDataHandler, bShowProgress).execute(sLogin, sPass);
 			return;
 		}
 		//5. send updates to client
-        new HttpGetter(this, 3, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress).execute("http://fires.kosmosnimki.ru/SAPI/Subscribe/Get/?CallBackName=" + USER_ID, msScanexLoginCookie);
+        new HttpGetter(this, 3, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress).execute(SCANEX_API + "/Subscribe/Get/?CallBackName=" + USER_ID, msScanexLoginCookie);
 	}
 	
 	public static String removeJsonT(String sData){
 		return sData.substring(4, sData.length() - 1);
+	}
+	
+	protected boolean writeToFile(File filePath, String sData){
+		try{
+			FileOutputStream os = new FileOutputStream(filePath, false);
+			OutputStreamWriter outputStreamWriter = new OutputStreamWriter(os);
+	        outputStreamWriter.write(sData);
+	        outputStreamWriter.close();
+	        return true;
+		}
+		catch(IOException e){
+	    	SendError( e.getLocalizedMessage() );
+	    	return false;
+		}		
+	}
+
+	protected String readFromFile(File filePath) {
+
+	    String ret = "";
+
+	    try {
+	    	FileInputStream inputStream = new FileInputStream(filePath);
+
+	        if ( inputStream != null ) {
+	            InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+	            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+	            String receiveString = "";
+	            StringBuilder stringBuilder = new StringBuilder();
+
+	            while ( (receiveString = bufferedReader.readLine()) != null ) {
+	                stringBuilder.append(receiveString);
+	            }
+
+	            inputStream.close();
+	            ret = stringBuilder.toString();
+	        }
+	    }
+	    catch (FileNotFoundException e) {
+	    	SendError( e.getLocalizedMessage() );
+	    } catch (IOException e) {
+	    	SendError( e.getLocalizedMessage() );
+	    }
+
+	    return ret;
+	}
+
+	@Override
+	public void onDestroy() {
+		StoreScanexData();
+		super.onDestroy();
+	}
+	
+	protected void LoadScanexData(){
+		mmoSubscriptions = new HashMap<Long, ScanexSubscriptionItem>(); 
+		File file = new File(getExternalFilesDir(null), SCANEX_FILE);
+		String sData = readFromFile(file);
+		try {
+			JSONObject oJSONRoot = new JSONObject(sData);
+			JSONArray jsonArray = oJSONRoot.getJSONArray("subscriptions");
+			
+			for (int i = 0; i < jsonArray.length(); i++) {
+				JSONObject jsonObject = jsonArray.getJSONObject(i);
+				
+				ScanexSubscriptionItem Item = new ScanexSubscriptionItem(this, jsonObject);
+				if(Item.GetId() != -1){
+					mmoSubscriptions.put(Item.GetId(), Item);
+				}
+			}
+			
+		} catch (JSONException e) {
+			SendError( e.getLocalizedMessage() );
+		}
+	}
+	
+	protected void StoreScanexData(){
+		try {
+			JSONObject oJSONRoot = new JSONObject();
+			JSONArray oJSONSubscriptions = new JSONArray();
+			oJSONRoot.put("subscriptions", oJSONSubscriptions);
+			for(ScanexSubscriptionItem Item : mmoSubscriptions.values()){
+				oJSONSubscriptions.put(Item.getAsJSON());
+			}
+			
+			File file = new File(getExternalFilesDir(null), SCANEX_FILE);
+			writeToFile(file, oJSONRoot.toString());
+			
+		} catch (JSONException e) {
+			SendError( e.getLocalizedMessage() );
+		}
 	}
 }
 

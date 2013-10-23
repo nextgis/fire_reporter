@@ -252,7 +252,7 @@ public class ReporterService extends Service {
 					try {
 						jsonMainObject = new JSONObject(EntityUtils.toString(entity));
 						if(jsonMainObject != null)
-							bHasErrors = jsonMainObject.getBoolean("error");
+							bHasErrors = jsonMainObject.getBoolean(GetFiresService.ERROR);
 					} catch (ParseException e) {
 						e.printStackTrace();
 					} catch (JSONException e) {

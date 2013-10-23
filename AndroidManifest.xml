@@ -38,10 +38,11 @@
                 <action android:name="com.nextgis.firereporter.ACTION_COMPASS_UPDATE" />
             </intent-filter>
         </activity>
-        <activity android:name="ViewFiresActivity"></activity>
         <activity android:name="SettingsActivity"></activity>
         <activity android:name="AboutActivity"></activity>
-
+        <activity android:name="ScanexNotificationsActivity"></activity>
+        <activity android:name="ScanexNotificationActivity"></activity>
+        
         <!-- receiver android:name=".OnAlarmReceiver"></receiver-->
         <service android:name=".ReporterService"
             android:process=":fr_sendfire"			

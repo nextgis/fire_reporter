@@ -25,68 +25,24 @@
 
 package com.nextgis.firereporter;
 
+import android.os.Bundle;
+
 import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.MenuItem;
 
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.Uri;
-import android.os.Bundle;
-
-import android.view.View;
-
-import android.widget.TextView;
-import android.widget.ImageView;
-
-public class AboutActivity extends SherlockActivity {
-    private TextView txtVersion;
-    private TextView txtDescription;
-    private ImageView imgLogo;
-
-    private String versionName = "unknown";
-    private String versionCode = "unknown";
+public class ScanexNotificationActivity extends SherlockActivity {
 
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        setContentView(R.layout.about);
-
-        txtVersion = (TextView) findViewById(R.id.txtVersion);
-        txtDescription = (TextView) findViewById(R.id.txtDescription);
-        imgLogo = (ImageView) findViewById(R.id.imgLogo);
-
-        imgLogo.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                onLogoClicked();
-            }
-        });
-
-        String pkgName = this.getPackageName();
-        try {
-            PackageManager pm = this.getPackageManager();
-            versionName = pm.getPackageInfo(pkgName, 0).versionName;
-            versionCode = Integer.toString(pm.getPackageInfo(this.getPackageName(), 0).versionCode);
-        } catch (NameNotFoundException e) {
-        }
-
-        txtVersion.setText("v. " + versionName + " (rev. " + versionCode + ")");
-        
        	getSupportActionBar().setHomeButtonEnabled(true);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    }
-
-    private void onLogoClicked() {
-        Intent browserIntent = new Intent("android.intent.action.VIEW",
-                Uri.parse("http://nextgis.ru"));
-        startActivity(browserIntent);
-    }
-    
+	}
+	
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                // app icon in action bar clicked; go home
                 finish();
                 return true;
             default:

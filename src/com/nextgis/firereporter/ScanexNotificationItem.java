@@ -28,33 +28,96 @@ import java.text.DecimalFormatSymbols;
 import java.util.Date;
 import java.util.Locale;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
-public class FireItem implements Parcelable{
+public class ScanexNotificationItem implements Parcelable {
 	public static final char DEGREE_CHAR = (char) 0x00B0;
+	private long nID;
 	private Date dt;
-	private double X,Y;
 	private int nIconId;
-	private long nFid;
-	private int nType;
-	private double dfDist;
+	private double X,Y;
+	private int nConfidence;
+	private int nPower;					
+	private String sURL1;
+	private String sURL2;
+	private String sType;
+	private String sPlace;
+	private String sMap;
 	private int nFormat;
 	private String sCoordLat;
 	private String sCoordLon;
 	private String sN, sS, sW, sE;
-	public FireItem(Context c, int nType, long nFid, Date dt, double X, double Y, double dfDist, int nIconId) {
-		this.dt = dt;
-		this.X = X;
-		this.Y = Y;
+	boolean mbWatched;
+	
+	public ScanexNotificationItem(Context c, long nID, String sPtCoord, int nConfidence, int nPower, String sURL1, String sURL2, String sType, String sPlace, String sDate, String sMap, int nIconId) {
+		Prepare(c);		
+		
+		this.nID = nID;
+		
+		//transform coords
+		String[] sCoords = sPtCoord.split(",");
+		if(sCoords.length == 2){
+			X = Double.parseDouble(sCoords[0]);
+			Y = Double.parseDouble(sCoords[1]);
+		}
+		else
+		{
+			X = 0;
+			Y = 0;
+		}
+
+		this.nConfidence = nConfidence;
+		this.nPower = nPower;
+		this.sURL1 = sURL1;
+		this.sURL2 = sURL2;
+		this.sType = sType;
+		this.sPlace = sPlace;
+		
+		//transform coords
+		String sSubDate = sDate.substring(6, sDate.length() - 2);
+		this.dt = new Date(Long.parseLong(sSubDate));
+		this.sMap = sMap;
 		this.nIconId = nIconId;
-		this.nFid = nFid;
-		this.nType = nType;
-		this.dfDist = dfDist;
+
+
+		
+    	mbWatched = false;
+	}
+	
+	public ScanexNotificationItem(Context c, JSONObject object) {
+		Prepare(c);
+		try {
+			this.nID = object.getLong("id");
+			this.dt = new Date(object.getLong("date"));
+			this.X = object.getDouble("X");
+			this.Y = object.getDouble("Y");
+			this.nConfidence = object.getInt("confidence");
+			this.nPower = object.getInt("power");
+			this.sURL1 = object.getString("URL1");
+			this.sURL2 = object.getString("URL2");
+			this.sType = object.getString("type");
+			this.sPlace = object.getString("place");
+			this.sMap = object.getString("map");
+			this.nIconId = object.getInt("iconId");
+			this.mbWatched = object.getBoolean("watched");
+
+		} catch (JSONException e) {
+			SendError(e.getLocalizedMessage());
+		}
+		
+	}
+	
+	protected void Prepare(Context c){
+		this.nID = -1;
 		
 		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
     	nFormat = prefs.getInt(SettingsActivity.KEY_PREF_COORD_FORMAT + "_int", Location.FORMAT_SECONDS);
@@ -64,11 +127,7 @@ public class FireItem implements Parcelable{
     	sN = (String) c.getResources().getText(R.string.compas_N);
     	sS = (String) c.getResources().getText(R.string.compas_S);
     	sW = (String) c.getResources().getText(R.string.compas_W);
-    	sE = (String) c.getResources().getText(R.string.compas_E);
-	}		
-	
-	public int GetIconId(){
-		return nIconId;
+    	sE = (String) c.getResources().getText(R.string.compas_E);		
 	}
 	
 	public String GetCoordinates(){
@@ -79,19 +138,10 @@ public class FireItem implements Parcelable{
 
 		return sOut;
 	}
-
-	public int GetType(){
-		return nType;
-	}
 	
 	public long GetId(){
-		return nFid;
+		return nID;
 	}
-	
-	public double GetDistance(){
-		return dfDist;
-	}		
-	
 	public String GetDateAsString(){
 		return java.text.DateFormat.getDateTimeInstance().format(dt);
 	}
@@ -190,15 +240,21 @@ public class FireItem implements Parcelable{
 	}
 
 	public void writeToParcel(Parcel out, int flags) {
-		out.writeSerializable(dt);			//	private Date dt;
+		out.writeSerializable(dt);		//	private Date dt;
 		out.writeDouble(X);
-		out.writeDouble(Y);			//  private double X,Y;
-		out.writeInt(nIconId);      //	private nIconId;
-		out.writeLong(nFid);		//  private long nFid;
-		out.writeInt(nType);		//	private int nType;
-		out.writeDouble(dfDist);	//	private double dfDist;
+		out.writeDouble(Y);				//  private double X,Y;
+		out.writeInt(nIconId);      	//	private nIconId;
+		out.writeLong(nID);				//  private long nFid;
+		out.writeInt(nConfidence);		//	private int nConfidence;
+		out.writeInt(nPower);			//	private int nPower;
+		out.writeString(sURL1);			//	private String sURL1
+		out.writeString(sURL2);			//	private String sURL2
+		out.writeString(sType);			//	private String sType
+		out.writeString(sPlace);		//	private String sPlace
+		out.writeString(sMap);			//	private String sMap
+		out.writeInt(mbWatched == true ? 1 : 0);			//	private boolean mbWatched
 		
-		//
+	//
 		out.writeInt(nFormat);
 		out.writeString(sCoordLat);
 		out.writeString(sCoordLon);
@@ -208,25 +264,32 @@ public class FireItem implements Parcelable{
 		out.writeString(sE);
 	}	
 	
-	public static final Parcelable.Creator<FireItem> CREATOR
-    = new Parcelable.Creator<FireItem>() {
-	    public FireItem createFromParcel(Parcel in) {
-	        return new FireItem(in);
+	public static final Parcelable.Creator<ScanexNotificationItem> CREATOR
+    = new Parcelable.Creator<ScanexNotificationItem>() {
+	    public ScanexNotificationItem createFromParcel(Parcel in) {
+	        return new ScanexNotificationItem(in);
 	    }
 	
-	    public FireItem[] newArray(int size) {
-	        return new FireItem[size];
+	    public ScanexNotificationItem[] newArray(int size) {
+	        return new ScanexNotificationItem[size];
 	    }
 	};
 	
-	private FireItem(Parcel in) {
+	private ScanexNotificationItem(Parcel in) {
 		dt = (Date) in.readSerializable();
 		X = in.readDouble();
 		Y = in.readDouble();
 		nIconId = in.readInt();
-		nFid = in.readLong();
-		nType = in.readInt();
-		dfDist = in.readDouble();
+		nID = in.readLong();
+		nConfidence = in.readInt();
+		nPower = in.readInt();
+		sURL1 = in.readString();
+		sURL2 = in.readString();
+		sType = in.readString();
+		sPlace = in.readString();
+		sMap = in.readString();
+		mbWatched = in.readInt() == 1 ? true : false;
+
 		//
 		nFormat = in.readInt();
 		sCoordLat = in.readString();
@@ -237,5 +300,49 @@ public class FireItem implements Parcelable{
 		sW = in.readString();
 		sE = in.readString();
 	}
-}
 
+	public boolean isWatched() {
+		return mbWatched;
+	}
+
+	public void setWatched(boolean mbWatched) {
+		this.mbWatched = mbWatched;
+	}
+
+	public JSONObject getAsJSON() {
+		JSONObject object = new JSONObject();
+		try {
+			object.put("id", nID);
+			object.put("date", dt.getTime());
+			object.put("X", X);
+			object.put("Y", Y);
+			object.put("iconId", nIconId);
+			object.put("confidence", nConfidence);
+			object.put("power", nPower);
+			object.put("URL1", sURL1);
+			object.put("URL2", sURL2);
+			object.put("type", sType);
+			object.put("place", sPlace);
+			object.put("map", sMap);
+			object.put("watched", mbWatched);
+			
+			
+		} catch (JSONException e) {
+			SendError(e.getLocalizedMessage());
+		}
+		return object;
+	}	
+	
+	protected void SendError(String sErr){
+		Log.d(MainActivity.TAG, sErr);
+	}
+
+	public int GetIconId() {
+		return nIconId;
+	}
+
+	public int GetConfidence() {
+		return nConfidence;
+	}
+
+}

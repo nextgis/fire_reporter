@@ -67,6 +67,7 @@
   <string name="stSearchCurrentDayOn">Get fires for current date</string>
   <string name="stSearchCurrentDayOff">Get fires for all dates</string>
   <string name="stConnectionSucceeded">Connection succeeded</string>
+  <string name="stConnectionFailed">Connection failed. Check you settings</string>
   
   <!-- about tab -->
   <string name="sHomepage">http://gis-lab.info/qa/firereporter.html</string>

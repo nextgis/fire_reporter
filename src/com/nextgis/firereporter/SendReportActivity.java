@@ -28,7 +28,6 @@ import com.actionbarsherlock.app.SherlockActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
-import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
@@ -73,16 +72,11 @@ public class SendReportActivity extends SherlockActivity {
 	private SQLiteDatabase ReportsDB;
 	private ReportsDatabase dbHelper;
 
-    @SuppressLint("NewApi")
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         setContentView(R.layout.report);
         
-        int currentapiVersion = android.os.Build.VERSION.SDK_INT;
-        if (currentapiVersion >= android.os.Build.VERSION_CODES.ICE_CREAM_SANDWICH){
-        	getActionBar().setHomeButtonEnabled(true);
-        }
        	getSupportActionBar().setHomeButtonEnabled(true);
         
 
@@ -378,9 +372,7 @@ public class SendReportActivity extends SherlockActivity {
         switch (item.getItemId()) {
             case android.R.id.home:
                 // app icon in action bar clicked; go home
-                Intent intent = new Intent(this, MainActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                startActivity(intent);
+                finish();
                 return true;
 	        case MainActivity.MENU_SETTINGS:
 	            // app icon in action bar clicked; go home

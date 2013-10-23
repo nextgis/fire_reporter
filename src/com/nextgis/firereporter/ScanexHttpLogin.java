@@ -48,7 +48,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 
-public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
+public class ScanexHttpLogin extends AsyncTask<String, Void, Void> {
     private Context mContext;
     private String mError = null;
     private ProgressDialog mDownloadDialog = null;
@@ -57,7 +57,7 @@ public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
     private Handler mEventReceiver;
     private boolean mbShowProgress;
 	
-    public HttpScanexLogin(Context c, int nType, String sMsg, Handler eventReceiver, boolean bShowProgress) {        
+    public ScanexHttpLogin(Context c, int nType, String sMsg, Handler eventReceiver, boolean bShowProgress) {        
         super();
         mbShowProgress = bShowProgress;
         mContext = c;
@@ -127,6 +127,12 @@ public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
 
     			response = httpclient.execute(httppost);
     			head = response.getFirstHeader("Set-Cookie");
+    			
+    			if(head == null){
+    				mError = mContext.getString(R.string.sNetworkUnreach);
+    				return null;
+    			}
+    			
     			sCookie += "; " + head.getValue();
     			head = response.getFirstHeader("Location");
     			sLoc = head.getValue();
@@ -145,21 +151,25 @@ public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
     			response = httpclient.execute(httpget);
 
     			head = response.getFirstHeader("Set-Cookie");
+    			if(head == null){
+    				mError = mContext.getString(R.string.sNetworkUnreach);
+    				return null;
+    			}
     			sCookie += "; " + head.getValue();
 
 
     			Bundle bundle = new Bundle();
     			if(sCookie.length() > 0){
     				//if(bGetCookie){
-    				bundle.putBoolean("error", false);
-    				bundle.putString("json", sCookie);
+    				bundle.putBoolean(GetFiresService.ERROR, false);
+    				bundle.putString(GetFiresService.JSON, sCookie);
     				//bundle.putString("json", mContent);
     			}
     			else{
-    				bundle.putBoolean("error", true);
+    				bundle.putBoolean(GetFiresService.ERROR, true);
     			}
 
-    			bundle.putInt("src", mnType);
+    			bundle.putInt(GetFiresService.SOURCE, mnType);
     			Message msg = new Message();
     			msg.setData(bundle);
     			if(mEventReceiver != null){
@@ -168,20 +178,20 @@ public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
 
     		} catch (ClientProtocolException e) {
     			mError = e.getMessage();
-    			cancel(true);
+    			return null;
     		} catch (IOException e) {
     			mError = e.getMessage();
-    			cancel(true);
+    			return null;
     		} catch (Exception e){
     			mError = e.getMessage();
-    			cancel(true);
+    			return null;
     		}
     	}
     	else {
     		Bundle bundle = new Bundle();
-    		bundle.putBoolean("error", true);
-    		bundle.putString("err_msq", mContext.getString(R.string.stNetworkUnreach));
-    		bundle.putInt("src", mnType);
+    		bundle.putBoolean(GetFiresService.ERROR, true);
+    		bundle.putString(GetFiresService.ERR_MSG, mContext.getString(R.string.stNetworkUnreach));
+    		bundle.putInt(GetFiresService.SOURCE, mnType);
 
     		Message msg = new Message();
     		msg.setData(bundle);
@@ -200,17 +210,15 @@ public class HttpScanexLogin extends AsyncTask<String, Void, Void> {
     	}
         if (mError != null) {
         	Bundle bundle = new Bundle();
-            bundle.putBoolean("error", true);
-            bundle.putString("err_msq", mError);
-            bundle.putInt("src", mnType);
+            bundle.putBoolean(GetFiresService.ERROR, true);
+            bundle.putString(GetFiresService.ERR_MSG, mError);
+            bundle.putInt(GetFiresService.SOURCE, mnType);
             
             Message msg = new Message();
             msg.setData(bundle);
             if(mEventReceiver != null){
             	mEventReceiver.sendMessage(msg);
             }
-        } else {
-            //Toast.makeText(MainActivity.this, "Source: " + Content, Toast.LENGTH_LONG).show();
         }
     }
 

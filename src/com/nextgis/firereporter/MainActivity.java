@@ -76,9 +76,13 @@ public class MainActivity extends SherlockFragmentActivity{
 	private int mPosition;
     private MenuItem refreshItem;
     
+    protected boolean mbRefreshing;
+    
 	@Override
 	  public void onCreate(Bundle savedInstanceState) {
 	    super.onCreate(savedInstanceState);
+	    
+	    mbRefreshing = false;
 	    
         // initialize the default settings
         PreferenceManager.setDefaultValues(this, R.xml.preferences_old_deleteme, false);
@@ -87,7 +91,6 @@ public class MainActivity extends SherlockFragmentActivity{
 	    
 	    final ActionBar actionBar = getSupportActionBar();
 	    actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        actionBar.setDisplayShowTitleEnabled(false);
         
         mAdapter = new FragmentRollAdapter(getSupportFragmentManager());
     	mAdapter.setActionBar(actionBar);
@@ -158,9 +161,9 @@ public class MainActivity extends SherlockFragmentActivity{
 		switch (item.getItemId()) {
 	        case android.R.id.home:
 	            // app icon in action bar clicked; go home
-	            Intent intentMain = new Intent(this, MainActivity.class);
-	            intentMain.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-	            startActivity(intentMain);
+	            //Intent intentMain = new Intent(this, MainActivity.class);
+	            //intentMain.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+	            //startActivity(intentMain);
 	            return true;
 	        case MENU_SETTINGS:
 	            // app icon in action bar clicked; go home
@@ -181,7 +184,7 @@ public class MainActivity extends SherlockFragmentActivity{
 	}
 	
 	public void refresh() {
-		if(refreshItem == null)
+		if(refreshItem == null || mbRefreshing)
 			return;
 
 	     LayoutInflater inflater = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -192,6 +195,8 @@ public class MainActivity extends SherlockFragmentActivity{
 	     iv.startAnimation(rotation);
 
 	     refreshItem.setActionView(iv);
+	     
+	     mbRefreshing = true;
 	}
 
 	public void completeRefresh() {
@@ -199,6 +204,8 @@ public class MainActivity extends SherlockFragmentActivity{
 			return;
 		refreshItem.getActionView().clearAnimation();
 		refreshItem.setActionView(null);
+		
+		mbRefreshing = false;
 	}
 
 	public static class TabListener<T extends SherlockFragment> implements ActionBar.TabListener {
@@ -243,7 +250,7 @@ public class MainActivity extends SherlockFragmentActivity{
 			switch(arg0)
 			{
 			case 0:
-				NeighborFiresDataFragment frag0 = new NeighborFiresDataFragment();
+				FiresDataFragment frag0 = new FiresDataFragment();
 				return (SherlockFragment) frag0;
 			case 1:
 				ScanexDataFragment frag1 = new ScanexDataFragment();
@@ -252,7 +259,20 @@ public class MainActivity extends SherlockFragmentActivity{
 				return null;
 			}
 		}
-	}    
+	} 
+	
+	protected void StopService(){
+        final Intent intent = new Intent(MainActivity.INTENT_NAME, null, this, GetFiresService.class);
+        intent.putExtra(GetFiresService.COMMAND, GetFiresService.SERVICE_STOP);
+        
+        startService(intent);
+	}
+
+	@Override
+	protected void onDestroy() {
+//		StopService();
+		super.onDestroy();
+	}
 }
 
 

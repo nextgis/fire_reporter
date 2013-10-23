@@ -3,17 +3,18 @@ package com.nextgis.firereporter;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-public class SubscbesListAdapter extends BaseAdapter {
+public class ScanexSubscbesListAdapter extends BaseAdapter {
 	private Context mContext;
-	private List <SubscriptionItem> mListSubscibeInfo;
+	private List <ScanexSubscriptionItem> mListSubscibeInfo;
 
-	public SubscbesListAdapter(Context c, List<SubscriptionItem> ListSubscibeInfo) {
+	public ScanexSubscbesListAdapter(Context c, List<ScanexSubscriptionItem> ListSubscibeInfo) {
 		mContext = c;
 		mListSubscibeInfo = ListSubscibeInfo;
 	}
@@ -27,7 +28,7 @@ public class SubscbesListAdapter extends BaseAdapter {
 	}
 
 	public long getItemId(int position) {
-		SubscriptionItem entry = mListSubscibeInfo.get(position);
+		ScanexSubscriptionItem entry = mListSubscibeInfo.get(position);
 		if(entry == null){
 			return -1;
 		}
@@ -36,7 +37,7 @@ public class SubscbesListAdapter extends BaseAdapter {
 
 	public View getView(int position, View convertView, ViewGroup parent) {
 		// get the selected entry
-		SubscriptionItem entry = mListSubscibeInfo.get(position);
+		ScanexSubscriptionItem entry = mListSubscibeInfo.get(position);
 
 		// reference to convertView
 		View v = convertView;
@@ -51,6 +52,12 @@ public class SubscbesListAdapter extends BaseAdapter {
 		TextView tvText1 = (TextView)v.findViewById(R.id.tvText1);
 
 		tvText1.setText(entry.GetTitle());
+		if(entry.HasNews()){
+			tvText1.setTypeface(null, Typeface.BOLD);
+		}
+		else{
+			tvText1.setTypeface(null, Typeface.NORMAL);
+		}
 
 		return v;
 	}
