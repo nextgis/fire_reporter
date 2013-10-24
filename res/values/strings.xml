@@ -30,10 +30,13 @@
   <string name="sGeneralSumm">The application general settings</string>
   <string name="sDatabase">Database settings</string>
   <string name="sSave">Save</string>
+  <string name="stNasa">NASA:</string>
   <string name="stNasaServer">MOD14 server</string>
   <string name="stNasaServerSumm">The MOD14 server (data from NASA) settings</string>
+  <string name="stUser">User:</string>
   <string name="stUserServer">User fires server</string>
   <string name="stUserServerSumm">The user fires (data from users) server settings</string>
+  <string name="stScanex">Scanex:</string>
   <string name="stScanexServer">Scanex server</string>
   <string name="stScanexServerSumm">The Scanex server settings</string>
   <string name="stScanexServerUserFullName">Name</string>
@@ -71,7 +74,7 @@
   
   <!-- about tab -->
   <string name="sHomepage">http://gis-lab.info/qa/firereporter.html</string>
-  <string name="sAbout">Applicaion for sending reports about fires and viewing nearest fires for current user location.\n\nDevelopers:\n  Alexander Bruy\n  Maxim Dubinin\n\nMore info at</string>
+  <string name="sAbout">Applicaion for sending reports about fires and viewing nearest fires for current user location.\n\nDevelopers:\n  Alexander Bruy\n  Maxim Dubinin\n  Dmitry Baryshnikov\n\nMore info at</string>
 
   <!-- application strings -->
   <string name="noNetwork">Network not available</string>
@@ -110,5 +113,19 @@
 		
 	<!-- defaults -->
 	<string name="stDefaultServer">http://gis-lab.info/data/zp-gis/soft/fires.php</string>
-		
+	
+	<!-- notifications -->
+	<string name="sID">Identificator:</string>
+	<string name="sCoordiantes">Coordinates:</string>
+	<string name="sConfidence">Confidence:</string>
+	<string name="sPower">Power:</string>
+	<string name="sMap">Map URL:</string>
+	<string name="sType">Type:</string>
+	<string name="sScanPlace">Place:</string>
+	<string name="sDate">Date:</string>
+	<string name="sShownOnSite">WEB site URL:</string>
+	
+	<string name="stNewFireNotifications">New fire notification</string>
+	<string name="stNewFireNotificationDetailes">Fire notifications detailes:</string>   
+	<string name="km">km</string> 
 </resources>

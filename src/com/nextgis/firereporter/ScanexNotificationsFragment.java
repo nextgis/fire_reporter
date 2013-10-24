@@ -104,8 +104,9 @@ public class ScanexNotificationsFragment extends SherlockFragment {
 	
 	public void add(ScanexNotificationItem item) {
 		for(ScanexNotificationItem storedItem : mFireList){
-			if(storedItem.GetId() == item.GetId());
+			if(storedItem.GetId() == item.GetId()){
 				return;
+			}
 		}
 
 		mFireList.add(item);

@@ -51,7 +51,7 @@ public class ScanexNotificationsActivity  extends SherlockFragmentActivity imple
 		mReceiver = new FiresResultReceiver(new Handler());
         mReceiver.setReceiver(this);
        
-        setContentView(R.layout.scanexnotesactivity);
+        setContentView(R.layout.scanex_notifications_activity);
         
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
         mNotesFragment = new ScanexNotificationsFragment();

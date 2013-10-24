@@ -33,13 +33,11 @@ import org.json.JSONObject;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class ScanexSubscriptionItem implements Parcelable {
@@ -50,15 +48,14 @@ public class ScanexSubscriptionItem implements Parcelable {
 	protected boolean bSMSEnable;
 	protected boolean bHasNews;
 	protected Handler mFillDataHandler; 
-	protected Context c;
+	protected GetFiresService c;
 	
 	protected final static int PREV_DAYS = 3;
-	protected int mPrevDays;
 	
 	protected Map<Long, ScanexNotificationItem> mmoItems;
 
 	
-	public ScanexSubscriptionItem(Context c, long nID, String sTitle, String sLayerName, String sWKT, boolean bSMSEnable) {
+	public ScanexSubscriptionItem(GetFiresService c, long nID, String sTitle, String sLayerName, String sWKT, boolean bSMSEnable) {
 		Prepare(c);
 		
 		this.nID = nID;
@@ -68,7 +65,7 @@ public class ScanexSubscriptionItem implements Parcelable {
 		this.bSMSEnable = bSMSEnable;
 	}		
 	
-	public ScanexSubscriptionItem(Context c, JSONObject object){
+	public ScanexSubscriptionItem(GetFiresService c, JSONObject object){
 		Prepare(c);
 		try {
 			this.nID = object.getLong("id");
@@ -92,13 +89,10 @@ public class ScanexSubscriptionItem implements Parcelable {
 		}
 	}
 	
-	protected void Prepare(Context c){
+	protected void Prepare(GetFiresService c){
 		this.c = c;
 		nID = -1;
 		bHasNews = false;
-		
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(c);
-		mPrevDays = prefs.getInt(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", PREV_DAYS);			
 		
     	mFillDataHandler = new Handler() {
     	    public void handleMessage(Message msg) {
@@ -153,7 +147,6 @@ public class ScanexSubscriptionItem implements Parcelable {
 		out.writeString(sWKT);
 		out.writeInt(bSMSEnable == true ? 1 : 0);
 		out.writeInt(bHasNews == true ? 1 : 0);
-		out.writeInt(mPrevDays);
 		//
 		out.writeInt(mmoItems.size());
 		for(ScanexNotificationItem it : mmoItems.values()){
@@ -179,7 +172,6 @@ public class ScanexSubscriptionItem implements Parcelable {
 		sWKT = in.readString();
 		bSMSEnable = in.readInt() == 1 ? true : false;
 		bHasNews = in.readInt() == 1 ? true : false;
-		mPrevDays = in.readInt();
 		
 		mmoItems = new HashMap<Long, ScanexNotificationItem>();
 		int nSize = in.readInt();
@@ -202,11 +194,16 @@ public class ScanexSubscriptionItem implements Parcelable {
 		this.bHasNews = bHasNews;
 	}
 	
-	public void UpdateFromRemote(Context c, String sCookie){
+	public void UpdateFromRemote(String sCookie){
+		if(c == null)
+			return;
 		//get notifications http://fires.kosmosnimki.ru/SAPI/Subscribe/GetData/55?dt=2013-08-06&CallBackName=44
     	Calendar calendar = Calendar.getInstance();
         
-        for(int i = 0; i < PREV_DAYS; i++){
+	    SharedPreferences prefs = c.getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE | Context.MODE_MULTI_PROCESS);
+		int nPrevDays = prefs.getInt(SettingsActivity.KEY_PREF_SEARCH_DAY_INTERVAL + "_int", PREV_DAYS);			
+
+        for(int i = 0; i < nPrevDays; i++){
         	String sDate = String.format("%04d-%02d-%02d", calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
         	Log.d(MainActivity.TAG, sDate);
         	String sURL = GetFiresService.SCANEX_API + "/Subscribe/GetData/" + nID + "?dt=" + sDate + "&CallBackName=" + GetFiresService.USER_ID;
@@ -237,10 +234,12 @@ public class ScanexSubscriptionItem implements Parcelable {
 					String sDate = jsonSubArray.getString(8);
 					String sMap = jsonSubArray.getString(9);
 				
-					ScanexNotificationItem Item = new ScanexNotificationItem(c, nID, sPtCoord, nConfidence, nPower, sURL1, sURL2, sType, sPlace, sDate, sMap, R.drawable.ic_scan);
-					if(!mmoItems.containsKey(Item.GetId())){
-						bHasNews = true;
+					if(!mmoItems.containsKey(nID)){
+						ScanexNotificationItem Item = new ScanexNotificationItem(c, nID, sPtCoord, nConfidence, nPower, sURL1, sURL2, sType, sPlace, sDate, sMap, R.drawable.ic_scan);
 						mmoItems.put(Item.GetId(), Item);
+						//notify changes
+						c.onNewNotifictation(GetId(), Item);
+						setHasNews(true);
 					}					
 				}
 			}

@@ -77,8 +77,8 @@ public class ScanexNotificationItem implements Parcelable {
 
 		this.nConfidence = nConfidence;
 		this.nPower = nPower;
-		this.sURL1 = sURL1;
-		this.sURL2 = sURL2;
+		this.sURL1 = clearURL(sURL1);
+		this.sURL2 = clearURL(sURL2);
 		this.sType = sType;
 		this.sPlace = sPlace;
 		
@@ -88,11 +88,17 @@ public class ScanexNotificationItem implements Parcelable {
 		this.sMap = sMap;
 		this.nIconId = nIconId;
 
-
-		
     	mbWatched = false;
 	}
 	
+	private String clearURL(String sURL) {
+		int nStart = sURL.indexOf("'");
+		sURL = sURL.substring(nStart + 1);
+		int nEnd = sURL.indexOf("'");
+		sURL = sURL.substring(0,nEnd - 1);
+		return sURL;
+	}
+
 	public ScanexNotificationItem(Context c, JSONObject object) {
 		Prepare(c);
 		try {
@@ -343,6 +349,30 @@ public class ScanexNotificationItem implements Parcelable {
 
 	public int GetConfidence() {
 		return nConfidence;
+	}
+
+	public String GetMapURL() {		
+		return sMap;
+	}
+
+	public int GetPower() {
+		return nPower;
+	}
+
+	public String GetType() {
+		return sType;
+	}
+
+	public String GetPlace() {
+		return sPlace;
+	}
+
+	public String GetSiteURL() {
+		return sURL2;
+	}
+
+	public String GetShortCoordinates() {
+		return String.format("%.2f,  $.2f", Y, X);
 	}
 
 }

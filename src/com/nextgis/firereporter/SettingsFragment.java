@@ -142,10 +142,10 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
             public void handleMessage(Message msg) {
             	Bundle resultData = msg.getData();
             	
-            	boolean bHaveErr = resultData.getBoolean("error");
-            	int nType = resultData.getInt("src");
+            	boolean bHaveErr = resultData.getBoolean(GetFiresService.ERROR);
+            	int nType = resultData.getInt(GetFiresService.SOURCE);
             	if(bHaveErr){
-            		Toast.makeText(getActivity(), resultData.getString("err_msq"), Toast.LENGTH_LONG).show();
+            		Toast.makeText(getActivity(), resultData.getString(GetFiresService.ERR_MSG), Toast.LENGTH_LONG).show();
             		if(nType == 1){//user
             			checkUserConnPref.setSummary(R.string.stConnectionFailed);
 	    		    	checkUserConnPref.setIcon(R.drawable.ic_alerts_and_states_error);
@@ -161,7 +161,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
             	}
             	else{           		            	
 	    			
-	    			String sData = resultData.getString("json");
+	    			String sData = resultData.getString(GetFiresService.JSON);
 	    			if(nType == 1){//user
 	    		    	JSONObject jsonMainObject;
 						try {
@@ -323,6 +323,12 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
     		Editor editor = getPreferenceScreen().getSharedPreferences().edit();
     		editor.putInt(key + "_int", nVal);
     		editor.commit();
+    		
+			SharedPreferences mySharedPreferences = getActivity().getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor1 = mySharedPreferences.edit();
+            editor1.putInt(key + "_int", nVal);
+            editor1.commit();    		
+
 		} 	
 		else if(key.equals(SettingsActivity.KEY_PREF_SEARCH_CURR_DAY)){
 			boolean bPref = sharedPreferences.getBoolean(key, false); 
@@ -330,7 +336,12 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 			
             SharedPreferences.Editor editor = getPreferenceScreen().getSharedPreferences().edit();
             editor.putBoolean(key, bPref);
-            editor.commit();			
+            editor.commit();
+            
+			SharedPreferences mySharedPreferences = getActivity().getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor1 = mySharedPreferences.edit();
+            editor1.putBoolean(key, bPref);
+            editor1.commit();
 		}
 		else if(key.equals(SettingsActivity.KEY_PREF_SEND_IN_SUSPEND)){
 			boolean bPref = sharedPreferences.getBoolean(key, false); 
@@ -338,7 +349,12 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 			
             SharedPreferences.Editor editor = getPreferenceScreen().getSharedPreferences().edit();
             editor.putBoolean(key, bPref);
-            editor.commit();			
+            editor.commit();		
+            
+			SharedPreferences mySharedPreferences = getActivity().getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor1 = mySharedPreferences.edit();
+            editor1.putBoolean(key, bPref);
+            editor1.commit();
 		}		
 		else if(key.equals(SettingsActivity.KEY_PREF_SRV_NASA) || key.equals(SettingsActivity.KEY_PREF_SRV_USER)){
 			newVal = sharedPreferences.getString(key, "");
@@ -350,13 +366,22 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 				sURL = "http://" + sURL;
 	    		Editor editor = getPreferenceScreen().getSharedPreferences().edit();
 	    		editor.putString(key, sURL);
-	    		editor.commit();
+	    		editor.commit();	    		
 	    		
 	    		newVal = sURL;
 			}
+			SharedPreferences mySharedPreferences = getActivity().getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor1 = mySharedPreferences.edit();
+            editor1.putString(key, sURL);
+            editor1.commit();
 		}
 		else if(key.equals(SettingsActivity.KEY_PREF_SRV_NASA_USER) || key.equals(SettingsActivity.KEY_PREF_SRV_USER_USER) || key.equals(SettingsActivity.KEY_PREF_SRV_SCAN_USER)) {  
             newVal = sharedPreferences.getString(key, "");
+            
+			SharedPreferences mySharedPreferences = getActivity().getSharedPreferences(MainActivity.PREFERENCES, Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor1 = mySharedPreferences.edit();
+            editor1.putString(key, newVal.toString());
+            editor1.commit();
 		}
 			
 		if(newVal.length() > 0)

@@ -22,8 +22,10 @@
     <supports-screens android:largeScreens="true"/>
     
     <application 
+        android:allowBackup="true"
         android:label="@string/app_name" 
-        android:icon="@drawable/icon">
+        android:icon="@drawable/icon"
+        android:theme="@style/Theme.Sherlock">
         <activity android:name="MainActivity"
                   android:label="@string/app_name"
                   android:uiOptions="splitActionBarWhenNarrow">
@@ -40,8 +42,10 @@
         </activity>
         <activity android:name="SettingsActivity"></activity>
         <activity android:name="AboutActivity"></activity>
-        <activity android:name="ScanexNotificationsActivity"></activity>
-        <activity android:name="ScanexNotificationActivity"></activity>
+        <activity android:name="ScanexNotificationsActivity"            
+                  android:uiOptions="splitActionBarWhenNarrow"></activity>
+        <activity android:name="ScanexNotificationActivity"            
+                  android:uiOptions="splitActionBarWhenNarrow"></activity>
         
         <!-- receiver android:name=".OnAlarmReceiver"></receiver-->
         <service android:name=".ReporterService"

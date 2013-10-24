@@ -61,22 +61,20 @@ public class ScanexNotificationListAdapter extends BaseAdapter {
 		// get the selected entry
 		ScanexNotificationItem entry = mListFireInfo.get(position);
 
-		// reference to convertView
-		View v = convertView;
-
-		// inflate new layout if null
-		if(v == null) {
+    	// inflate new layout if null
+		if(convertView == null) {
 			LayoutInflater inflater = LayoutInflater.from(mContext);
-			v = inflater.inflate(R.layout.rowlayout, null);
+			convertView = inflater.inflate(R.layout.rowlayout, null);
+			ImageView ivIcon = (ImageView)convertView.findViewById(R.id.ivIcon);
+			ivIcon.setImageDrawable(convertView.getResources().getDrawable(entry.GetIconId()));
+
 		}
 
 		// load controls from layout resources
-		ImageView ivIcon = (ImageView)v.findViewById(R.id.ivIcon);
-		TextView tvText1 = (TextView)v.findViewById(R.id.tvText1);
-		TextView tvText2 = (TextView)v.findViewById(R.id.tvText2);
+		TextView tvText1 = (TextView)convertView.findViewById(R.id.tvText1);
+		TextView tvText2 = (TextView)convertView.findViewById(R.id.tvText2);
 
 		// set data to display
-		ivIcon.setImageDrawable(v.getResources().getDrawable(entry.GetIconId()));
 		tvText1.setText(entry.GetDateAsString());
 		tvText2.setText(entry.GetCoordinates());
 		
@@ -93,7 +91,7 @@ public class ScanexNotificationListAdapter extends BaseAdapter {
 			tvText2.setTextColor(Color.WHITE);
 		}
 
-		return v;
+		return convertView;
 
 	}
 }

@@ -39,17 +39,14 @@ public class ScanexSubscbesListAdapter extends BaseAdapter {
 		// get the selected entry
 		ScanexSubscriptionItem entry = mListSubscibeInfo.get(position);
 
-		// reference to convertView
-		View v = convertView;
-
 		// inflate new layout if null
-		if(v == null) {
+		if(convertView == null) {
 			LayoutInflater inflater = LayoutInflater.from(mContext);
-			v = inflater.inflate(R.layout.subsciberowlayout, null);
+			convertView = inflater.inflate(R.layout.subsciberowlayout, null);
 		}
 
 		// set data to display
-		TextView tvText1 = (TextView)v.findViewById(R.id.tvText1);
+		TextView tvText1 = (TextView)convertView.findViewById(R.id.tvText1);
 
 		tvText1.setText(entry.GetTitle());
 		if(entry.HasNews()){
@@ -59,6 +56,6 @@ public class ScanexSubscbesListAdapter extends BaseAdapter {
 			tvText1.setTypeface(null, Typeface.NORMAL);
 		}
 
-		return v;
+		return convertView;
 	}
 }

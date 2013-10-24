@@ -44,12 +44,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlarmManager;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Bundle;
@@ -57,13 +59,18 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.ResultReceiver;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 import android.util.Log;
 
 
 public class GetFiresService extends Service {
-	private NotificationManager mNM;
+	private NotificationManager mNotificationManager;
+	NotificationCompat.Builder mBuilder;
+	NotificationCompat.InboxStyle mInboxStyle;
+	private final static int STATE_NOTIFY_ID = 777;
 	
     private Handler mFillDataHandler; 
     private ResultReceiver mUserNasaReceiver, mScanexReceiver;
@@ -82,6 +89,7 @@ public class GetFiresService extends Service {
 	public final static int SERVICE_SCANEXSTART = 7;
 	public final static int SERVICE_SCANEXDATA = 8;
 	public final static int SERVICE_SCANEXDATAUPDATE = 9;
+	public final static int SERVICE_NOTIFY_DISMISSED = 10;
 
 	public final static int SCANEX_SUBSCRIPTION = 1;
 	public final static int SCANEX_NOTIFICATION = 2;
@@ -103,9 +111,11 @@ public class GetFiresService extends Service {
 	
 	protected Time mSanextCookieTime;
 	protected final static int USER_ID = 777;
+	
+	protected int nUserCount, nNasaCount, nScanexCount;
 
 	
-	protected Map<Long, ScanexSubscriptionItem> mmoSubscriptions;
+	private Map<Long, ScanexSubscriptionItem> mmoSubscriptions;
 
     
 	@Override
@@ -130,14 +140,14 @@ public class GetFiresService extends Service {
 			return START_STICKY;
 		
 		int nCommnad = intent.getIntExtra(COMMAND, SERVICE_START);
-		mnFilter = intent.getIntExtra(SOURCE, MainActivity.SRC_NASA | MainActivity.SRC_USER);
 		
 		SharedPreferences prefs = getSharedPreferences(MainActivity.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS);
-		long nUpdateInterval = prefs.getLong(SettingsActivity.KEY_PREF_UPDATE_DATA_TIME + "_long",  DateUtils.MINUTE_IN_MILLIS); //15
+		long nUpdateInterval = prefs.getLong(SettingsActivity.KEY_PREF_UPDATE_DATA_TIME + "_long", 30 * DateUtils.MINUTE_IN_MILLIS); //15
 		boolean bEnergyEconomy = prefs.getBoolean(SettingsActivity.KEY_PREF_SERVICE_BATT_SAVE, true);
 		
 		switch(nCommnad){
 		case SERVICE_START:
+			mnFilter = intent.getIntExtra(SOURCE, MainActivity.SRC_NASA | MainActivity.SRC_USER);
 			mUserNasaReceiver = intent.getParcelableExtra(RECEIVER);		
 
 			if(mnCurrentExec < 1){
@@ -165,7 +175,6 @@ public class GetFiresService extends Service {
 				mScanexReceiver.send(SERVICE_SCANEXSTART, new Bundle());
 			}
 			Log.d(MainActivity.TAG, "GetFiresService service started");
-			mnCurrentExec++;
 			GetScanexData(false);
 			
 			// plan next start
@@ -208,6 +217,15 @@ public class GetFiresService extends Service {
 				}
 			}
 			break;
+		case SERVICE_NOTIFY_DISMISSED:
+			nUserCount = 0;
+			nNasaCount = 0; 
+			nScanexCount = 0;
+			
+			mInboxStyle = new NotificationCompat.InboxStyle();
+			mInboxStyle.setBigContentTitle(getString(R.string.stNewFireNotificationDetailes));
+
+			break;
 		}
 		
         return START_STICKY;
@@ -217,7 +235,32 @@ public class GetFiresService extends Service {
 		mLocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		mnCurrentExec = 0;
 		mmoFires = new HashMap<Integer, FireItem>();
-
+		
+		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		nUserCount = 0;
+		nNasaCount = 0; 
+		nScanexCount = 0;
+		TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+		stackBuilder.addParentStack(MainActivity.class);
+		stackBuilder.addNextIntent(new Intent(this, MainActivity.class));
+		//stackBuilder.addNextIntent(new Intent(this, ScanexNotificationsActivity.class));
+		PendingIntent resultPendingIntent = stackBuilder.getPendingIntent( 0, PendingIntent.FLAG_UPDATE_CURRENT );
+		
+		mBuilder =
+		        new NotificationCompat.Builder(this)
+		        .setSmallIcon(R.drawable.ic_fire_small)
+		        .setContentTitle(getString(R.string.stNewFireNotifications))
+		        .setLights(Color.RED, 250, 1500);		
+		mBuilder.setContentIntent(resultPendingIntent);
+		
+		Intent intent = new Intent(MainActivity.INTENT_NAME);	
+        intent.putExtra(COMMAND, SERVICE_NOTIFY_DISMISSED);
+		PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		mBuilder.setDeleteIntent(pendingIntent);
+		
+		mInboxStyle = new NotificationCompat.InboxStyle();
+		mInboxStyle.setBigContentTitle(getString(R.string.stNewFireNotificationDetailes));
+		
 		LoadScanexData();
 		
 		mSanextCookieTime = new Time();
@@ -295,6 +338,7 @@ public class GetFiresService extends Service {
         
 	        if(currentLocation == null){
 	        	SendError(getString(R.string.noLocation));
+	        	return;
 	        }
 	        else {
 	            sLat = Double.toString(currentLocation.getLatitude());
@@ -342,6 +386,7 @@ public class GetFiresService extends Service {
 	        
 	        if(currentLocation == null){
 	        	SendError(getString(R.string.noLocation));
+	        	return;
 	        }
 	        else {
 	            sLat = Double.toString(currentLocation.getLatitude());
@@ -386,6 +431,7 @@ public class GetFiresService extends Service {
 			if(mScanexReceiver != null){
 				mScanexReceiver.send(SERVICE_STOP, new Bundle());			
 			}
+			mnCurrentExec = 0;
 		}
 	}
 
@@ -453,7 +499,7 @@ public class GetFiresService extends Service {
 						SendScanexItem(Item);						
 					}
 
-					mmoSubscriptions.get(nID).UpdateFromRemote(this, msScanexLoginCookie);
+					mmoSubscriptions.get(nID).UpdateFromRemote(msScanexLoginCookie);
 					
 				}
 				
@@ -517,6 +563,7 @@ public class GetFiresService extends Service {
 					mmoFires.put(nKey, item);
 					
 					SendItem(item);
+					onNotify(nType, item.GetShortCoordinates() + "/" + dfDist/1000 + " " + getString(R.string.km) + "/" + item.GetDateAsString());
 				}	 
 			}
 		} catch (Exception e) {
@@ -537,10 +584,12 @@ public class GetFiresService extends Service {
 	        String sLogin = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_USER, "new@kosmosnimki.ru");
 	        String sPass = prefs.getString(SettingsActivity.KEY_PREF_SRV_SCAN_PASS, "test123");
 	        msScanexLoginCookie = "setting";
+	        mnCurrentExec++;
 			new ScanexHttpLogin(this, 4, getResources().getString(R.string.stChecking), mFillDataHandler, bShowProgress).execute(sLogin, sPass);
 			return;
 		}
 		//5. send updates to client
+		mnCurrentExec++;
         new HttpGetter(this, 3, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress).execute(SCANEX_API + "/Subscribe/Get/?CallBackName=" + USER_ID, msScanexLoginCookie);
 	}
 	
@@ -594,6 +643,7 @@ public class GetFiresService extends Service {
 
 	@Override
 	public void onDestroy() {
+		mNotificationManager.cancelAll();
 		StoreScanexData();
 		super.onDestroy();
 	}
@@ -635,6 +685,52 @@ public class GetFiresService extends Service {
 		} catch (JSONException e) {
 			SendError( e.getLocalizedMessage() );
 		}
+	}
+
+	public void onNewNotifictation(long subscriptionID, ScanexNotificationItem item) {
+		String sAdds = item.GetPlace() == null ? item.GetType() : item.GetPlace();
+		onNotify(3, item.GetShortCoordinates() + "/" + sAdds + "/" + item.GetDateAsString());
+		
+		if(mScanexReceiver == null)
+			return;
+		Bundle b = new Bundle();
+		b.putLong(SUBSCRIPTION_ID, subscriptionID);
+		b.putLong(NOTIFICATION_ID, item.GetId());
+		b.putInt(TYPE, SCANEX_NOTIFICATION);
+		b.putParcelable(ITEM, item);
+		mScanexReceiver.send(SERVICE_SCANEXDATA, b);
+		
+	}
+	
+	protected void onNotify(int nType, String sMsg){
+
+		String sFullMsg;
+		if(nType == 1){			//user
+			nUserCount++;
+			sFullMsg = getString(R.string.stUser) + sMsg;
+		}
+		else if(nType == 2){	//nasa
+			nNasaCount++;
+			sFullMsg = getString(R.string.stNasa) + sMsg;
+		}
+		else if(nType == 3){	//scanex
+			nScanexCount++;
+			sFullMsg = getString(R.string.stScanex) + sMsg;
+		}
+		else{
+			return;
+		}
+
+		String sSumm = getString(R.string.stScanex) + nScanexCount + ", " + getString(R.string.stUser) +  nUserCount + ", " + getString(R.string.stNasa) + nNasaCount;
+		mBuilder.setContentText(sSumm);
+		
+		mInboxStyle.setSummaryText(sSumm);		
+		mInboxStyle.addLine(sFullMsg);
+
+		// Moves the big view style object into the notification object.
+		mBuilder.setStyle(mInboxStyle);
+
+		mNotificationManager.notify(STATE_NOTIFY_ID, mBuilder.build());
 	}
 }
 

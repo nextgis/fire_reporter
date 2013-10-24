@@ -59,26 +59,23 @@ public class FireListAdapter extends BaseAdapter {
 		// get the selected entry
 		FireItem entry = mListFireInfo.get(position);
 
-		// reference to convertView
-		View v = convertView;
-
 		// inflate new layout if null
-		if(v == null) {
+		if(convertView == null) {
 			LayoutInflater inflater = LayoutInflater.from(mContext);
-			v = inflater.inflate(R.layout.rowlayout, null);
+			convertView = inflater.inflate(R.layout.rowlayout, null);
 		}
 
 		// load controls from layout resources
-		ImageView ivIcon = (ImageView)v.findViewById(R.id.ivIcon);
-		TextView tvText1 = (TextView)v.findViewById(R.id.tvText1);
-		TextView tvText2 = (TextView)v.findViewById(R.id.tvText2);
+		ImageView ivIcon = (ImageView)convertView.findViewById(R.id.ivIcon);
+		TextView tvText1 = (TextView)convertView.findViewById(R.id.tvText1);
+		TextView tvText2 = (TextView)convertView.findViewById(R.id.tvText2);
 
 		// set data to display
-		ivIcon.setImageDrawable(v.getResources().getDrawable(entry.GetIconId()));
+		ivIcon.setImageDrawable(convertView.getResources().getDrawable(entry.GetIconId()));
 		tvText1.setText(entry.GetDateAsString());
 		tvText2.setText(entry.GetCoordinates());
 
-		return v;
+		return convertView;
 
 	}
 	

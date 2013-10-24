@@ -85,7 +85,10 @@ public class MainActivity extends SherlockFragmentActivity{
 	    mbRefreshing = false;
 	    
         // initialize the default settings
-        PreferenceManager.setDefaultValues(this, R.xml.preferences_old_deleteme, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_general, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_user, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_nasa, false);
+        PreferenceManager.setDefaultValues(this, R.xml.preferences_scanex, false);
 
 	    setContentView(R.layout.main);
 	    
@@ -143,14 +146,19 @@ public class MainActivity extends SherlockFragmentActivity{
 			menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_ABOUT, com.actionbarsherlock.view.Menu.NONE, R.string.tabAbout)
 			.setIcon(R.drawable.ic_action_about)
 			.setShowAsAction(MenuItem.SHOW_AS_ACTION_NEVER);	
-			
+
+			boolean wasRefreshing = false;
+			if(mbRefreshing){
+				wasRefreshing = true;
+				completeRefresh();
+			}
 			refreshItem = menu.add(com.actionbarsherlock.view.Menu.NONE, MENU_REFRESH, com.actionbarsherlock.view.Menu.NONE, R.string.sRefresh)
 			.setIcon(R.drawable.ic_navigation_refresh);
 			refreshItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM);
 			
-	        //if(mFireList.isEmpty())
-	        //	GetData(false);
-
+			if(wasRefreshing){
+				refresh();
+			}
 			
 			return true;
 	    
