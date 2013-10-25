@@ -44,7 +44,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.AlarmManager;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -79,7 +78,7 @@ public class GetFiresService extends Service {
     private LocationManager mLocManager;
     private int mnFilter;
     private int mnCurrentExec;
-    private Map<Integer, FireItem> mmoFires; 
+    private Map<Long, FireItem> mmoFires; 
     private String msScanexLoginCookie;
     
 	public final static int SERVICE_START = 1;
@@ -135,7 +134,6 @@ public class GetFiresService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Log.d(MainActivity.TAG, "Received start id " + startId + ": " + intent);
 		super.onStartCommand(intent, flags, startId);
 
 		if(intent == null)
@@ -146,6 +144,8 @@ public class GetFiresService extends Service {
 		SharedPreferences prefs = getSharedPreferences(MainActivity.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS);
 		long nUpdateInterval = prefs.getLong(SettingsActivity.KEY_PREF_INTERVAL + "_long", 30 * DateUtils.MINUTE_IN_MILLIS); //15
 		boolean bEnergyEconomy = prefs.getBoolean(SettingsActivity.KEY_PREF_SERVICE_BATT_SAVE, true);
+		
+		Log.d(MainActivity.TAG, "Received intent - id " + startId + ": " + intent + ", command:" + nCommnad);
 		
 		switch(nCommnad){
 		case SERVICE_START:
@@ -236,7 +236,7 @@ public class GetFiresService extends Service {
 	protected void Prepare(){
 		mLocManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 		mnCurrentExec = 0;
-		mmoFires = new HashMap<Integer, FireItem>();
+		mmoFires = new HashMap<Long, FireItem>();
 		
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		nUserCount = 0;
@@ -256,10 +256,10 @@ public class GetFiresService extends Service {
 		
 		
 		
-		Intent intent = new Intent(MainActivity.INTENT_NAME);	
-        intent.putExtra(COMMAND, SERVICE_NOTIFY_DISMISSED);
-		PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-		mBuilder.setDeleteIntent(pendingIntent);
+		Intent delIntent = new Intent(this, GetFiresService.class);	
+		delIntent.putExtra(COMMAND, SERVICE_NOTIFY_DISMISSED);
+		PendingIntent deletePendingIntent = PendingIntent.getService(this, 0, delIntent, 0);
+		mBuilder.setDeleteIntent(deletePendingIntent);
 		
 		mInboxStyle = new NotificationCompat.InboxStyle();
 		mInboxStyle.setBigContentTitle(getString(R.string.stNewFireNotificationDetailes));
@@ -542,7 +542,7 @@ public class GetFiresService extends Service {
 					//Log.i(ParseJSON.class.getName(), jsonObject.getString("text"));
 					long nId = jsonObject.getLong("fid");
 	
-					int nKey = (int) (nType * 10000000 + nId);
+					long nKey = 10000000000L * nType + nId; //as we have values from separte tables we can get same key - to prevent this add big value multiplied on source type
 					if(mmoFires.containsKey(nKey))
 						continue;
 	
@@ -752,6 +752,8 @@ public class GetFiresService extends Service {
 
 		mNotificationManager.notify(STATE_NOTIFY_ID, mBuilder.build());
 	}
+	
+	
 }
 
 /*

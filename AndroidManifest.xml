@@ -35,7 +35,8 @@
             </intent-filter>
         </activity>
 
-        <activity android:name="SendReportActivity">
+        <activity android:name="SendReportActivity"
+            android:uiOptions="splitActionBarWhenNarrow">
             <intent-filter>
                 <action android:name="com.nextgis.firereporter.ACTION_COMPASS_UPDATE" />
             </intent-filter>
@@ -55,7 +56,7 @@
             <intent-filter>
                 <action android:name="com.nextgis.firereporter.sendpos.action.START" />
                 <action android:name="com.nextgis.firereporter.sendpos.action.STOP" />
-            </intent-filter>
+                </intent-filter>
         </service>
         <!-- android:process=":fr_receivefire"			 -->
         <service android:name=".GetFiresService"

@@ -66,13 +66,13 @@ public class ScanexNotificationItem implements Parcelable {
 		//transform coords
 		String[] sCoords = sPtCoord.split(",");
 		if(sCoords.length == 2){
-			X = Double.parseDouble(sCoords[0]);
-			Y = Double.parseDouble(sCoords[1]);
+			Y = Double.parseDouble(sCoords[0]);
+			X = Double.parseDouble(sCoords[1]);
 		}
 		else
 		{
-			X = 0;
 			Y = 0;
+			X = 0;
 		}
 
 		this.nConfidence = nConfidence;

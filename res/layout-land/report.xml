@@ -86,11 +86,17 @@
         </TableRow>               
     </TableLayout>
 
-    <fragment
+    <LinearLayout
+        android:id="@+id/compass_fragment_container"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+        
+    <!--fragment
         android:id="@+id/compass_fragment"
         android:name="com.nextgis.firereporter.CompassFragment"
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content" /-->
    
     </LinearLayout>
     

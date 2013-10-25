@@ -54,10 +54,12 @@ public class ScanexNotificationsActivity  extends SherlockFragmentActivity imple
         setContentView(R.layout.scanex_notifications_activity);
         
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        mNotesFragment = new ScanexNotificationsFragment();
-  		fragmentTransaction.add(R.id.scanex_notes_container, mNotesFragment, "DETAILES");
-        fragmentTransaction.commit();  
-        
+        mNotesFragment = (ScanexNotificationsFragment) getSupportFragmentManager().findFragmentByTag("COMPASS");
+        if(mNotesFragment == null){
+        	mNotesFragment = new ScanexNotificationsFragment();
+        	fragmentTransaction.add(R.id.scanex_notes_container, mNotesFragment, "DETAILES").commit();  
+        }
+      
         getSupportFragmentManager().executePendingTransactions();
 
         //

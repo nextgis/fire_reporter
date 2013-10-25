@@ -41,13 +41,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.location.LocationProvider;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 
 import android.widget.EditText;
 import android.widget.Toast;
 
-import android.support.v4.app.FragmentManager;
-
-public class SendReportActivity extends SherlockFragmentActivity {
+public class SendReportActivity  extends SherlockFragmentActivity {
     private EditText edLatitude;
     private EditText edLongitude;
     private EditText edAzimuth;
@@ -79,8 +78,17 @@ public class SendReportActivity extends SherlockFragmentActivity {
         
         setContentView(R.layout.report);
         
-       	getSupportActionBar().setHomeButtonEnabled(true);
+        //add fragment
+        FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
+        frCompass = (CompassFragment) getSupportFragmentManager().findFragmentByTag("COMPASS");
+        if(frCompass == null){
+        	frCompass = new CompassFragment();
+        	fragmentTransaction.add(R.id.compass_fragment_container, frCompass, "COMPASS").commit();  
+        }
+       
+        getSupportFragmentManager().executePendingTransactions();
         
+       	getSupportActionBar().setHomeButtonEnabled(true);
 
         edLatitude = (EditText) findViewById(R.id.edLatitude);
         edLongitude = (EditText) findViewById(R.id.edLongitude);
@@ -161,10 +169,11 @@ public class SendReportActivity extends SherlockFragmentActivity {
         }
 
         compassAvailable = accelerometerAvailable && magnetometerAvailable;
-
         if (compassAvailable) {
-            frCompass = (CompassFragment) getSupportFragmentManager().findFragmentById(R.id.compass_fragment);
-            frCompass.SetAzimuthCtrl(edAzimuth);
+            //frCompass = (CompassFragment) getSupportFragmentManager().findFragmentByTag("COMPASS");
+        	if(frCompass != null){
+        		frCompass.SetAzimuthCtrl(edAzimuth);
+        	}
         } else {
             edAzimuth.setText(getString(R.string.noCompass));
             edAzimuth.setEnabled(false);
@@ -422,6 +431,7 @@ public class SendReportActivity extends SherlockFragmentActivity {
             //double dfAz = Double.valueOf(edAzimuth.getText().toString()).doubleValue();
             double dfDist = Double.valueOf(edDistance.getText().toString()).doubleValue();
             String sComment = edComment.getText().toString();
+            sComment.replace(System.getProperty("line.separator"), " | ");
             
     		dbHelper = new ReportsDatabase(this.getApplicationContext());
     		ReportsDB = dbHelper.getWritableDatabase();

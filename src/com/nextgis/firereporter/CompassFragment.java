@@ -55,9 +55,7 @@ import android.view.View.OnTouchListener;
 import android.widget.EditText;
 
 public class CompassFragment extends SherlockFragment implements OnTouchListener {
-	
-	final static String TAG = "firereporter";
-	
+
 	protected Location currentLocation;
 	private float downX, downY, upX, upY;
 	protected float declination;
@@ -97,8 +95,6 @@ public class CompassFragment extends SherlockFragment implements OnTouchListener
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-        
 		// reference to vibrator service
 		vibrator = (Vibrator) getSherlockActivity().getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -127,7 +123,9 @@ public class CompassFragment extends SherlockFragment implements OnTouchListener
 		
 		getSherlockActivity().registerReceiver(compassBroadcastReceiver, new IntentFilter(ACTION_COMPASS_UPDATES));	
 		
-        Log.d(TAG, "CompassActivity: onCreate");	
+        Log.d(MainActivity.TAG, "CompassActivity: onCreate");	
+        
+		super.onCreate(savedInstanceState);
 	}
 
 	@Override
@@ -309,7 +307,7 @@ public class CompassFragment extends SherlockFragment implements OnTouchListener
 		try {
 			return f.format(value);
 		} catch (IllegalArgumentException e) {
-			return "err";
+			return "Error";
 		}
 
 	}	
@@ -362,15 +360,9 @@ public class CompassFragment extends SherlockFragment implements OnTouchListener
 
 	};
 	
-	/**
-	 * Get current magnetic declination
-	 * 
-	 * @param location
-	 * @param timestamp
-	 * @return
-	 */
 	public static float getDeclination(Location location, long timestamp) {
-
+		if(location == null)
+			return 0;
 		GeomagneticField field = new GeomagneticField((float) location.getLatitude(), (float) location.getLongitude(),
 				(float) location.getAltitude(), timestamp);
 
