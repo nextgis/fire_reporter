@@ -142,7 +142,7 @@ public class HttpGetter extends AsyncTask<String, Void, Void> {
         else {
             Bundle bundle = new Bundle();
             bundle.putBoolean(GetFiresService.ERROR, true);
-            bundle.putString(GetFiresService.ERR_MSG, mContext.getString(R.string.stNetworkUnreach));
+            bundle.putString(GetFiresService.ERR_MSG, mContext.getString(R.string.noNetwork));
             bundle.putInt(GetFiresService.SOURCE, mnType);
             
             Message msg = new Message();

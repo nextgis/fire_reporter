@@ -25,9 +25,8 @@ package com.nextgis.firereporter;
 
 import java.text.NumberFormat;
 
-import com.nextgis.firereporter.R;
+import com.actionbarsherlock.app.SherlockFragment;
 
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -55,12 +54,7 @@ import android.view.View.OnLongClickListener;
 import android.view.View.OnTouchListener;
 import android.widget.EditText;
 
-/**
- * @author Bishop
- *
- */
-
-public class CompassFragment extends Fragment implements OnTouchListener {
+public class CompassFragment extends SherlockFragment implements OnTouchListener {
 	
 	final static String TAG = "firereporter";
 	
@@ -82,8 +76,7 @@ public class CompassFragment extends Fragment implements OnTouchListener {
 	private EditText edAzimuth = null;
 	
 	@Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		
 		View view = inflater.inflate(R.layout.compassfragment, container, false);
         
@@ -107,13 +100,13 @@ public class CompassFragment extends Fragment implements OnTouchListener {
 		super.onCreate(savedInstanceState);
         
 		// reference to vibrator service
-		vibrator = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+		vibrator = (Vibrator) getSherlockActivity().getSystemService(Context.VIBRATOR_SERVICE);
 
 		// vibrate or not?
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
 		vibrationOn = prefs.getBoolean("compass_vibration", true);
 
-		LocationManager locationManager = (LocationManager) getActivity().getSystemService(Context.LOCATION_SERVICE);
+		LocationManager locationManager = (LocationManager) getSherlockActivity().getSystemService(Context.LOCATION_SERVICE);
 		
 		if(currentLocation == null)
 		{
@@ -127,12 +120,12 @@ public class CompassFragment extends Fragment implements OnTouchListener {
 		declination = getDeclination(currentLocation, now);
 
 		
-		sensorManager = (SensorManager) getActivity().getSystemService(Context.SENSOR_SERVICE);
+		sensorManager = (SensorManager) getSherlockActivity().getSystemService(Context.SENSOR_SERVICE);
 		if(sensorManager != null){
 			sensorManager.registerListener(sensorListener, sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION), SensorManager.SENSOR_DELAY_NORMAL);
 		}
 		
-		getActivity().registerReceiver(compassBroadcastReceiver, new IntentFilter(ACTION_COMPASS_UPDATES));	
+		getSherlockActivity().registerReceiver(compassBroadcastReceiver, new IntentFilter(ACTION_COMPASS_UPDATES));	
 		
         Log.d(TAG, "CompassActivity: onCreate");	
 	}
@@ -147,20 +140,20 @@ public class CompassFragment extends Fragment implements OnTouchListener {
 
 	@Override
 	public void onPause() {
-		getActivity().unregisterReceiver(compassBroadcastReceiver);
+		getSherlockActivity().unregisterReceiver(compassBroadcastReceiver);
 
 		super.onPause();
 	}	
 	
 	@Override
 	public void onResume() {
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
 		if (getView().findViewById(R.id.compassView) != null) {
 			getView().findViewById(R.id.compassView).setKeepScreenOn(prefs.getBoolean("compass_wake_lock", true));
 		}
 
 		// registering receiver for compass updates
-		getActivity().registerReceiver(compassBroadcastReceiver, new IntentFilter(ACTION_COMPASS_UPDATES));		
+		getSherlockActivity().registerReceiver(compassBroadcastReceiver, new IntentFilter(ACTION_COMPASS_UPDATES));		
 
 		super.onResume();
 	}
@@ -217,7 +210,7 @@ public class CompassFragment extends Fragment implements OnTouchListener {
 	
 	public void updateCompass(float azimuth) {
 				
-		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getSherlockActivity());
 		boolean trueNorth = prefs.getBoolean("compass_true_north", false);
 		boolean showMagnetic = prefs.getBoolean("compass_show_magnetic", true);
 
@@ -347,8 +340,8 @@ public class CompassFragment extends Fragment implements OnTouchListener {
 			intent.putExtras(bundle);
 
 			// broadcasting compass updates
-			if(getActivity() != null)
-				getActivity().sendBroadcast(intent);
+			if(getSherlockActivity() != null)
+				getSherlockActivity().sendBroadcast(intent);
 		}
 
 		public void onAccuracyChanged(Sensor arg0, int arg1) {			
@@ -386,7 +379,7 @@ public class CompassFragment extends Fragment implements OnTouchListener {
 	
 	public int getDeviceRotation() {
 
-		Display display = getActivity().getWindowManager().getDefaultDisplay();
+		Display display = getSherlockActivity().getWindowManager().getDefaultDisplay();
 
 		final int rotation = display.getRotation();
 

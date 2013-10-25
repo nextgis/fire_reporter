@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">FireReporter</string>
+  
+  <!-- menu items -->
   <string name="sPlace">Отметить</string>
-  <string name="sRefresh">Обновть</string> 
+  <string name="sRefresh">Обновить</string>
+  
   <!-- tabs names-->
-  <string name="tabSend">Отчет</string>
-  <string name="tabView">Просмотр</string>
+  <string name="tabAbout">Информация</string>
   <string name="tabSettings">Настройки</string>
-  <string name="tabAbout">Инфо</string>
+  <string name="tabSubscription">Подписки</string>
+  <string name="tabNotification">Уведомления</string>
 
   <!-- send tab -->
   <string name="sLatitude">Широта</string>
   <string name="sLongitude">Долгота</string>
   <string name="sAzimuth">Азимут</string>
-  <string name="sLock">Заблокировать</string>
-  <string name="sUnLock">Разблокировать</string>
   <string name="sDistance">Расстояние, м</string>
   <string name="sComment">Комментарий</string>
   <string name="sSend">Отправить</string>
@@ -24,42 +25,52 @@
   <string name="sRows">Записей: </string>
 
   <!-- settings tab -->
-  <string name="sGeneral">Общие настройки</string>
+  <string name="sGeneral">Общие</string>
   <string name="sGeneralSumm">Общие настройки приложения</string>
   <string name="sDatabase">Настройки баз данных</string>
   <string name="sSave">Сохранить</string>
-  <string name="stNasaServer">Установки сервера данных MOD14</string>
-  <string name="stUserServer">Установки сервера данных о пожарах от пользователей</string>
-  <string name="stScanexServer">Установки сервера Scanex</string>
+  <string name="stNasa">НАСА:</string>
+  <string name="stNasaServer">Сервер MOD14</string>
+  <string name="stNasaServerSumm">Установки сервера данных MOD14</string>
+  <string name="stUser">Пользовательские:</string>
+  <string name="stUserServer">Сервер данных о пожарах от пользователей</string>
+  <string name="stUserServerSumm">Установки сервера данных о пожарах от пользователей</string>
+  <string name="stScanex">Сканэкс:</string>
+  <string name="stScanexServer">Сервер Сканэкса</string>
+  <string name="stScanexServerSumm">Установки сервера Сканэкса</string>
+  <string name="stScanexServerUserFullName">Имя</string>
+  <string name="stScanexServerUserPhone">Телефон</string>
   
   <!-- settings general -->
   <string name="sInterval">Интервал обмена с сетью</string>
   <string name="sRowsCount">Количество пожаров в ответе</string>
   <string name="sDaysBeforeSearchDate">Интервал для получения пожаров</string>
-  <string name="sSearchDate">Поиск по дате</string>
   <string name="sRadiusGetFires">Радиус для получения пожаров</string>
-  <string name="sSendDataInSuspend">Экономия заряда батареи</string>
-  <string name="sSendDataInSuspendOn">Экономия выкл.</string>
-  <string name="sSendDataInSuspendOff">Экономия вкл.</string>	  
-
+  <string name="sSearchDate">Поиск по дате</string>
+  <string name="sBattSave">Экономия заряда батареи</string>
+  <string name="sShowLed">Световой индикатор</string>
+  <string name="sPlaySound">Звук</string>
+  <string name="sVibro">Вибрация</string>
+  <string name="stOn">Вкл.</string>
+  <string name="stOff">Выкл.</string>	
+  
   <!-- settings db -->
   <string name="sServer">Сервер</string>
-  <string name="sPort">Порт</string>
-  <string name="sDBase">База данных</string>
-  <string name="sUser">Логин</string>
-  <string name="sPassword">Пароль</string>
-  <string name="sSSL">Использовать SSL</string>
   <string name="sServerSummary">Сервер базы данных</string>
+  <string name="sPort">Порт</string>
   <string name="sPortSummary">Порт базы данных</string>
+  <string name="sDBase">База данных</string>
   <string name="sDBaseSummary">Имя базы данных</string>
+  <string name="sUser">Логин</string>
   <string name="sUserSummary">Логин входа в базу данных</string>
+  <string name="sPassword">Пароль</string>
   <string name="sPasswordSummary">Пароль базы данных</string>
-  <string name="sSSLSummary">Использовать шифрование SSL</string>  
-  <string name="sCheckDBConn">Проверка подключения к БД</string>
-  <string name="sCheckDBConnSummary">Нажмите, что бы проверить подключение к БД</string>
+  <string name="sCheckDBConn">Проверка подключения к базе данных</string>
+  <string name="sCheckDBConnSummary">Нажмите, что бы проверить подключение к базе данных</string>
   <string name="stSearchCurrentDayOn">Получить пожары за текущую дату</string>
   <string name="stSearchCurrentDayOff">Получить пожары за все даты</string>
   <string name="stConnectionSucceeded">Подключение удалось</string>
+  <string name="stConnectionFailed">Ошибка подключения. Проверьте свои настройки</string>
   
   <!-- about tab -->
   <string name="sHomepage">http://gis-lab.info/qa/firereporter.html</string>
@@ -68,24 +79,22 @@
   <!-- application strings -->
   <string name="noNetwork">Сеть не доступна</string>
   <string name="saved">Сохранено</string>
-
-  <string name="noLocation">Нет данных</string>
+  <string name="noLocation">Нет данных о местоположении</string>
   <string name="noGPS">GPS недоступен</string>
   <string name="noCompass">Компас недоступен</string>
   <string name="reportStored">Отчет сохранен для дальнейшей отправки</string>
   <string name="reportSend">Отчет успешно отправлен</string>
   <string name="reportStoredFailed">Не удалось создать запись для отправки отчета</string>
-
+  
   <string name="confirmSend">Координаты не заданы. Продолжить?</string>
   <string name="yes">Да</string>
   <string name="no">Нет</string>
   
   <!-- progress dialog -->
-  <string name="stDownLoading">Загрузка...</string>
-  <string name="stChecking">Проверка...</string>  
-  <string name="stNetworkUnreach">Сеть недотупна</string>
+  <string name="stDownLoading">Загрузка &#8230;</string>
+  <string name="stChecking">Проверка &#8230;</string>
     
-  <!-- compas -->
+  <!-- compass -->
 
 	<string name="compas_N">С</string>
 	<string name="compas_NE">СВ</string>
@@ -98,9 +107,25 @@
 	<string name="coord_lat">Ш</string>
 	<string name="coord_lon">Д</string>
 	
-	<string name="sNetworkUnreach">Сеть недотупна</string>
-	
 	<!-- defaults -->
 	<string name="stDefaultServer">http://gis-lab.info/data/zp-gis/soft/fires.php</string>
-		
+	
+	<!-- notifications -->
+	<string name="sID">Идентификатор:</string>
+	<string name="sCoordiantes">Координаты:</string>
+	<string name="sConfidence">Достоверность:</string>
+	<string name="sPower">Мощность:</string>
+	<string name="sMap">Ссылка на карту:</string>
+	<string name="sType">Тип:</string>
+	<string name="sScanPlace">Место:</string>
+	<string name="sDate">Дата:</string>
+	<string name="sShownOnSite">Ссылка на сайт:</string>
+	
+	<string name="stNewFireNotifications">Новое уведомление о пожаре</string>
+	<string name="stNewFireNotificationDetailes">Детали уведомления о пожаре:</string>   
+	<string name="km">км</string> 
+	
+	<string name="pref_cat_network">Сеть</string>
+	<string name="pref_cat_data">Данные</string>
+	<string name="pref_cat_notify">Уведомления</string>
 </resources>

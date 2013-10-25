@@ -24,7 +24,7 @@
 
 package com.nextgis.firereporter;
 
-import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
 
@@ -45,7 +45,9 @@ import android.os.Bundle;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class SendReportActivity extends SherlockActivity {
+import android.support.v4.app.FragmentManager;
+
+public class SendReportActivity extends SherlockFragmentActivity {
     private EditText edLatitude;
     private EditText edLongitude;
     private EditText edAzimuth;
@@ -161,7 +163,7 @@ public class SendReportActivity extends SherlockActivity {
         compassAvailable = accelerometerAvailable && magnetometerAvailable;
 
         if (compassAvailable) {
-            frCompass = (CompassFragment) getFragmentManager().findFragmentById(R.id.compass_fragment);
+            frCompass = (CompassFragment) getSupportFragmentManager().findFragmentById(R.id.compass_fragment);
             frCompass.SetAzimuthCtrl(edAzimuth);
         } else {
             edAzimuth.setText(getString(R.string.noCompass));

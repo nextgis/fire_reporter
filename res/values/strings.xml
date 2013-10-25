@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">FireReporter</string>
+  
+  <!-- menu items -->
   <string name="sPlace">Mark place</string>
   <string name="sRefresh">Refresh</string>
+  
   <!-- tabs names-->
-  <string name="tabSend">Send</string>
-  <string name="tabView">View</string>
-  <string name="tabSettings">Settings</string>
   <string name="tabAbout">About</string>
+  <string name="tabSettings">Settings</string>
   <string name="tabSubscription">Subscriptions</string>
   <string name="tabNotification">Notifications</string>
 
@@ -15,8 +16,6 @@
   <string name="sLatitude">Latitude</string>
   <string name="sLongitude">Longitude</string>
   <string name="sAzimuth">Azimuth</string>
-  <string name="sLock">Lock position</string>
-  <string name="sUnLock">Unlock position</string>
   <string name="sDistance">Distance, m</string>
   <string name="sComment">Comment</string>
   <string name="sSend">Send report</string>
@@ -45,8 +44,8 @@
   <!-- settings general -->
   <string name="sInterval">Network exchange interval</string>
   <string name="sRowsCount">Number of fires in response</string>
-  <string name="sDaysBeforeSearchDate">Day interval to fetch fires</string>
-  <string name="sRadiusGetFires">Radius in km to get fires</string>
+  <string name="sDaysBeforeSearchDate">Interval to fetch fires</string>
+  <string name="sRadiusGetFires">Radius to get fires</string>
   <string name="sSearchDate">Search by date</string>
   <string name="sBattSave">Saving battery</string>
   <string name="sShowLed">Show LED</string>
@@ -66,8 +65,6 @@
   <string name="sUserSummary">Database login</string>
   <string name="sPassword">Password</string>
   <string name="sPasswordSummary">Database password</string>
-  <string name="sSSL">Use SSL</string>
-  <string name="sSSLSummary">Use Secure Sockets Layer</string>
   <string name="sCheckDBConn">Check DB connection</string>
   <string name="sCheckDBConnSummary">Click to check DB connection</string>
   <string name="stSearchCurrentDayOn">Get fires for current date</string>
@@ -82,7 +79,6 @@
   <!-- application strings -->
   <string name="noNetwork">Network not available</string>
   <string name="saved">Saved successfully</string>
-
   <string name="noLocation">No location info</string>
   <string name="noGPS">GPS provider not available</string>
   <string name="noCompass">Compass sensor not available</string>
@@ -95,9 +91,8 @@
   <string name="no">No</string>
   
   <!-- progress dialog -->
-  <string name="stDownLoading">Downloading...</string>
-  <string name="stChecking">Ckecking...</string>
-  <string name="stNetworkUnreach">Network is not available</string>
+  <string name="stDownLoading">Downloading &#8230;</string>
+  <string name="stChecking">Ckecking &#8230;</string>
     
   <!-- compass -->
 
@@ -112,8 +107,6 @@
 	<string name="coord_lat"></string>
 	<string name="coord_lon"></string>
 	
-	<string name="sNetworkUnreach">The network unreacheable</string>
-		
 	<!-- defaults -->
 	<string name="stDefaultServer">http://gis-lab.info/data/zp-gis/soft/fires.php</string>
 	
