@@ -41,6 +41,7 @@ import android.widget.Toast;
 public class ScanexDataFragment extends SherlockFragment implements FiresResultReceiver.Receiver {
 	protected FiresResultReceiver mReceiver;
 	protected boolean mbTwoPanelMode;
+    private static final int MAX_WIDTH = 750;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -97,7 +98,7 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
     	
    		ScanexNotificationsFragment NotesFr = (ScanexNotificationsFragment) getChildFragmentManager().findFragmentByTag("DETAILES");
 
-    	if(metrics.widthPixels > 1000){
+    	if(metrics.widthPixels > MAX_WIDTH){
     		mbTwoPanelMode = true;
 
             if(NotesFr == null){

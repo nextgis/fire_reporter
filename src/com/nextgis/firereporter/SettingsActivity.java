@@ -35,6 +35,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 public class SettingsActivity extends SherlockPreferenceActivity {
+	private SettingsSupport support;
 
 	protected final static String ACTION_PREFS_GENERAL = "com.nextgis.firereporter.PREFS_GENERAL";
 	protected final static String ACTION_PREFS_NASA = "com.nextgis.firereporter.PREFS_NASA";
@@ -46,7 +47,7 @@ public class SettingsActivity extends SherlockPreferenceActivity {
     public static final String KEY_PREF_ROW_COUNT = "row_count";
     public static final String KEY_PREF_SEARCH_CURR_DAY = "search_current_date";
     public static final String KEY_PREF_SEARCH_DAY_INTERVAL = "days_before_current";
-	public static final String KEY_PREF_SEND_IN_SUSPEND = "send_data_in_suspend";
+	public static final String KEY_PREF_SERVICE_BATT_SAVE = "service_battary_save";
 	public static final String KEY_PREF_FIRE_SEARCH_RADIUS = "fire_search_radius";
     
     public static final String KEY_PREF_SRV_NASA = "mod14_server";
@@ -66,31 +67,42 @@ public class SettingsActivity extends SherlockPreferenceActivity {
     public static final String KEY_PREF_SRV_SCAN_USER_NAME = "scanex_user_name";
     public static final String KEY_PREF_SRV_SCAN_USER_PHONE = "scanex_user_phone";
 
-    public static final String KEY_PREF_UPDATE_DATA_TIME = "updatedata_time";
-    public static final String KEY_PREF_SERVICE_BATT_SAVE = "service_battary_save";
-	
+    public static final String KEY_PREF_NOTIFY_LED = "notify_led";
+    public static final String KEY_PREF_NOTIFY_SOUND = "notify_sound";
+    public static final String KEY_PREF_NOTIFY_VIBRO = "notify_vibro";
+    
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
         ActionBar ab = getSupportActionBar();
         ab.setDisplayHomeAsUpEnabled(true);
         
+        boolean bAddPrefXML = false;
         String action = getIntent().getAction();
         if (action != null && action.equals(ACTION_PREFS_GENERAL)) {
             addPreferencesFromResource(R.xml.preferences_general);
+            bAddPrefXML = true;
         }
         else if (action != null && action.equals(ACTION_PREFS_NASA)) {
             addPreferencesFromResource(R.xml.preferences_nasa);
+            bAddPrefXML = true;
         }
         else if (action != null && action.equals(ACTION_PREFS_USER)) {
             addPreferencesFromResource(R.xml.preferences_user);
+            bAddPrefXML = true;
         }
         else if (action != null && action.equals(ACTION_PREFS_SCANEX)) {
             addPreferencesFromResource(R.xml.preferences_scanex);
+            bAddPrefXML = true;
         }
         else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.HONEYCOMB) {
             // Load the legacy preferences headers
             addPreferencesFromResource(R.xml.preference_headers_legacy);
+            bAddPrefXML = true;
+        }
+        
+        if(bAddPrefXML){
+        	support = new SettingsSupport(this, this.getPreferenceScreen());
         }
     }
     
@@ -105,11 +117,24 @@ public class SettingsActivity extends SherlockPreferenceActivity {
         }
     }
     
-    //TODO: add 2.3 support for check db connections
-    
     @SuppressLint("NewApi")
 	@Override
     public void onBuildHeaders(List<Header> target) {
        loadHeadersFromResource(R.xml.preference_headers, target);
+    }
+    
+    @Override
+	public void onResume() {
+        super.onResume();
+        
+        if(support != null)
+        	support.registerListener();
+    }
+
+    @Override
+	public void onPause() {
+        super.onPause();
+        if(support != null)
+        	support.unregisterListener();
     }
 }

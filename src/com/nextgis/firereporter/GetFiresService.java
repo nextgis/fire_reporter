@@ -54,6 +54,8 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -142,7 +144,7 @@ public class GetFiresService extends Service {
 		int nCommnad = intent.getIntExtra(COMMAND, SERVICE_START);
 		
 		SharedPreferences prefs = getSharedPreferences(MainActivity.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS);
-		long nUpdateInterval = prefs.getLong(SettingsActivity.KEY_PREF_UPDATE_DATA_TIME + "_long", 30 * DateUtils.MINUTE_IN_MILLIS); //15
+		long nUpdateInterval = prefs.getLong(SettingsActivity.KEY_PREF_INTERVAL + "_long", 30 * DateUtils.MINUTE_IN_MILLIS); //15
 		boolean bEnergyEconomy = prefs.getBoolean(SettingsActivity.KEY_PREF_SERVICE_BATT_SAVE, true);
 		
 		switch(nCommnad){
@@ -249,9 +251,10 @@ public class GetFiresService extends Service {
 		mBuilder =
 		        new NotificationCompat.Builder(this)
 		        .setSmallIcon(R.drawable.ic_fire_small)
-		        .setContentTitle(getString(R.string.stNewFireNotifications))
-		        .setLights(Color.RED, 250, 1500);		
+		        .setContentTitle(getString(R.string.stNewFireNotifications));
 		mBuilder.setContentIntent(resultPendingIntent);
+		
+		
 		
 		Intent intent = new Intent(MainActivity.INTENT_NAME);	
         intent.putExtra(COMMAND, SERVICE_NOTIFY_DISMISSED);
@@ -563,7 +566,8 @@ public class GetFiresService extends Service {
 					mmoFires.put(nKey, item);
 					
 					SendItem(item);
-					onNotify(nType, item.GetShortCoordinates() + "/" + dfDist/1000 + " " + getString(R.string.km) + "/" + item.GetDateAsString());
+					String sMsg = String.format("%s/%.1f %s/%s", item.GetShortCoordinates(), dfDist/1000, getString(R.string.km), item.GetDateAsString());
+					onNotify(nType, sMsg);
 				}	 
 			}
 		} catch (Exception e) {
@@ -688,7 +692,7 @@ public class GetFiresService extends Service {
 	}
 
 	public void onNewNotifictation(long subscriptionID, ScanexNotificationItem item) {
-		String sAdds = item.GetPlace() == null ? item.GetType() : item.GetPlace();
+		String sAdds = item.GetPlace().equals("null") ? item.GetType() : item.GetPlace();
 		onNotify(3, item.GetShortCoordinates() + "/" + sAdds + "/" + item.GetDateAsString());
 		
 		if(mScanexReceiver == null)
@@ -723,6 +727,22 @@ public class GetFiresService extends Service {
 
 		String sSumm = getString(R.string.stScanex) + nScanexCount + ", " + getString(R.string.stUser) +  nUserCount + ", " + getString(R.string.stNasa) + nNasaCount;
 		mBuilder.setContentText(sSumm);
+
+		SharedPreferences prefs = getSharedPreferences(MainActivity.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS);
+		boolean bShowLed = prefs.getBoolean(SettingsActivity.KEY_PREF_NOTIFY_LED, true);
+		boolean bSound = prefs.getBoolean(SettingsActivity.KEY_PREF_NOTIFY_SOUND, false);
+		boolean bVibro = prefs.getBoolean(SettingsActivity.KEY_PREF_NOTIFY_VIBRO, false);
+		
+		if(bShowLed)
+			mBuilder.setLights(Color.RED, 300, 4500);	
+		if(bSound){
+			Uri uri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+			mBuilder.setSound(uri);
+		}
+		if(bVibro){
+			long[] vibraPattern = {0, 500, 250, 500 };
+			mBuilder.setVibrate(vibraPattern);
+		}
 		
 		mInboxStyle.setSummaryText(sSumm);		
 		mInboxStyle.addLine(sFullMsg);

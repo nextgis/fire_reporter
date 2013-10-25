@@ -12,12 +12,38 @@
 		<item>30 min</item>
 		<item>60 min</item>
 	</string-array>	
+	<string-array name="interval_updates_val">
+	    <item>1</item>
+		<item>2</item>
+		<item>3</item>
+		<item>4</item>
+		<item>5</item>
+		<item>10</item>
+		<item>15</item>
+		<item>20</item>
+		<item>30</item>
+		<item>60</item>
+	</string-array>
 	
-	<string-array name="databases">
-      <item>Reports DB</item>
-      <item>Fires DB</item>
-  	</string-array>
-  	
+	<string-array name="interval_days">
+	    <item>1 day</item>
+		<item>5 days</item>
+		<item>7 days</item>
+		<item>15 days</item>
+		<item>1 month</item>
+		<item>2 months</item>
+		<item>3 months</item>
+	</string-array>	
+	<string-array name="interval_days_val">
+	    <item>1</item>
+		<item>5</item>
+		<item>7</item>
+		<item>15</item>
+		<item>30</item>
+		<item>60</item>
+		<item>90</item>
+	</string-array>
+	
 	<string-array name="coordinates_format">
 	    <item>DD-MM-SS.SS</item>
 		<item>DD-MM.MM</item>

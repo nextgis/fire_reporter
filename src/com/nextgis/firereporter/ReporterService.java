@@ -116,10 +116,10 @@ public class ReporterService extends Service {
         	Context c = this.getApplicationContext();
            	SharedPreferences prefs = getSharedPreferences(MainActivity.PREFERENCES, MODE_PRIVATE | MODE_MULTI_PROCESS); 
            	long nMinTimeBetweenSend = prefs.getLong(SettingsActivity.KEY_PREF_INTERVAL + "_long", DateUtils.MINUTE_IN_MILLIS);
-           	boolean bSendInSuspend = prefs.getBoolean(SettingsActivity.KEY_PREF_SEND_IN_SUSPEND, true);
+           	boolean bBattEconomy = prefs.getBoolean(SettingsActivity.KEY_PREF_SERVICE_BATT_SAVE, true);
 
            	if(!HttpGetter.IsNetworkAvailible(c)){
-               	ScheduleNextUpdate(c, nMinTimeBetweenSend, bSendInSuspend);
+               	ScheduleNextUpdate(c, nMinTimeBetweenSend, bBattEconomy);
                	Log.d(TAG, "network not availible");
                	return START_NOT_STICKY;
         	}
@@ -135,16 +135,16 @@ public class ReporterService extends Service {
          		Log.d(TAG, "new fireDataSender");
          		fireDataSender = new SendFireDataTask();
          		fireDataSender.execute(this.getApplicationContext());
-         		ScheduleNextUpdate(c, nMinTimeBetweenSend, bSendInSuspend);
+         		ScheduleNextUpdate(c, nMinTimeBetweenSend, bBattEconomy);
          	}
         	else if(fireDataSender.getStatus() == AsyncTask.Status.FINISHED){
         		Log.d(TAG, "exist fireDataSender");
         		fireDataSender.execute(this.getApplicationContext());
-        		ScheduleNextUpdate(c, nMinTimeBetweenSend, bSendInSuspend);
+        		ScheduleNextUpdate(c, nMinTimeBetweenSend, bBattEconomy);
         	}
         	else if(fireDataSender.getStatus() == AsyncTask.Status.PENDING || fireDataSender.getStatus() == AsyncTask.Status.RUNNING){
         		Log.d(TAG, "exist fireDataSender executing");
-        		ScheduleNextUpdate(c, nMinTimeBetweenSend, bSendInSuspend);
+        		ScheduleNextUpdate(c, nMinTimeBetweenSend, bBattEconomy);
         	}
         	else{
         		Log.d(TAG, "unexpected behaviour");

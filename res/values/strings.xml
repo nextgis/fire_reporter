@@ -43,14 +43,17 @@
   <string name="stScanexServerUserPhone">Phone</string>
   
   <!-- settings general -->
-  <string name="sInterval">If failed, try to send data every, min</string>
-  <string name="sRowsCount">Number of rows to fetch from fires database</string>
-  <string name="sDaysBeforeSearchDate">Day interval to fetch rows</string>
+  <string name="sInterval">Network exchange interval</string>
+  <string name="sRowsCount">Number of fires in response</string>
+  <string name="sDaysBeforeSearchDate">Day interval to fetch fires</string>
   <string name="sRadiusGetFires">Radius in km to get fires</string>
-  <string name="sSearchDate">Search by current date</string>
-  <string name="sSendDataInSuspend">Send data in suspend</string>
-  <string name="sSendDataInSuspendOn">Send data in suspend</string>
-  <string name="sSendDataInSuspendOff">Don\'t send data in suspend</string>	
+  <string name="sSearchDate">Search by date</string>
+  <string name="sBattSave">Saving battery</string>
+  <string name="sShowLed">Show LED</string>
+  <string name="sPlaySound">Play sound</string>
+  <string name="sVibro">Vibro</string>
+  <string name="stOn">On</string>
+  <string name="stOff">Off</string>	
   
   <!-- settings db -->
   <string name="sServer">Server</string>
@@ -128,4 +131,8 @@
 	<string name="stNewFireNotifications">New fire notification</string>
 	<string name="stNewFireNotificationDetailes">Fire notifications detailes:</string>   
 	<string name="km">km</string> 
+	
+	<string name="pref_cat_network">Network</string>
+	<string name="pref_cat_data">Data</string>
+	<string name="pref_cat_notify">Notifications</string>
 </resources>

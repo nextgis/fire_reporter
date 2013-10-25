@@ -81,7 +81,7 @@ public class FireItem implements Parcelable{
 	}
 
 	public String GetShortCoordinates(){
-    	return String.format("%.2f,  %.2f", Y, X);
+    	return String.format("%.2f  %.2f", Y, X);
 	}
 	
 	public int GetType(){

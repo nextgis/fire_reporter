@@ -33,14 +33,14 @@
   <string name="stScanexServer">Установки сервера Scanex</string>
   
   <!-- settings general -->
-  <string name="sInterval">При сбое повторять отправку каждые, минут</string>
-  <string name="sRowsCount">Число запрашиваемых записей</string>
-  <string name="sDaysBeforeSearchDate">Интервал в днях для получения записей</string>
-  <string name="sSearchDate">Искать по текущей дате</string>
-  <string name="sRadiusGetFires">Радиус в км для получения пожаров</string>
-  <string name="sSendDataInSuspend">Включать устройство для отправки данных</string>
-  <string name="sSendDataInSuspendOn">Включать устройство для отправки данных</string>
-  <string name="sSendDataInSuspendOff">Не включать устройство для отправки данных</string>	  
+  <string name="sInterval">Интервал обмена с сетью</string>
+  <string name="sRowsCount">Количество пожаров в ответе</string>
+  <string name="sDaysBeforeSearchDate">Интервал для получения пожаров</string>
+  <string name="sSearchDate">Поиск по дате</string>
+  <string name="sRadiusGetFires">Радиус для получения пожаров</string>
+  <string name="sSendDataInSuspend">Экономия заряда батареи</string>
+  <string name="sSendDataInSuspendOn">Экономия выкл.</string>
+  <string name="sSendDataInSuspendOff">Экономия вкл.</string>	  
 
   <!-- settings db -->
   <string name="sServer">Сервер</string>
