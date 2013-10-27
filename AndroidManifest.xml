@@ -48,7 +48,6 @@
         <activity android:name="ScanexNotificationActivity"            
                   android:uiOptions="splitActionBarWhenNarrow"></activity>
         
-        <!-- receiver android:name=".OnAlarmReceiver"></receiver-->
         <service android:name=".ReporterService"
             android:process=":fr_sendfire"			
 			android:label="FireReporterSendService"             

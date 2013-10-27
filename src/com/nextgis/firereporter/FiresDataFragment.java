@@ -198,21 +198,22 @@ public class FiresDataFragment extends SherlockFragment implements FiresResultRe
 	
 
 	public void onReceiveResult(int resultCode, Bundle resultData) {
-		switch (resultCode) {
-		case GetFiresService.SERVICE_START:
-			((MainActivity)getSherlockActivity()).refresh();
-			break;
-		case GetFiresService.SERVICE_DATA:
+		if((resultCode & GetFiresService.SERVICE_START) !=0 ){
+			((MainActivity)getSherlockActivity()).refresh();			
+		}
+
+		if((resultCode & GetFiresService.SERVICE_DATA) !=0 ){
   		  	mFireList.add((FireItem) resultData.getParcelable(GetFiresService.ITEM));		
 		    Collections.sort(mFireList, new FireItemComparator());
 		    mListAdapter.notifyDataSetChanged();
-			break;
-		case GetFiresService.SERVICE_STOP:
+		}
+
+		if((resultCode & GetFiresService.SERVICE_STOP) !=0 ){
 			((MainActivity)getSherlockActivity()).completeRefresh();
-			break;
-		case GetFiresService.SERVICE_ERROR:
+		}
+		
+		if((resultCode & GetFiresService.SERVICE_ERROR) !=0 ){
 			Toast.makeText(getSherlockActivity(), resultData.getString(GetFiresService.ERR_MSG), Toast.LENGTH_LONG).show();
-			break;
-		}		
+		}
 	}
 }

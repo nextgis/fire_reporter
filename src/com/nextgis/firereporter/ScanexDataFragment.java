@@ -149,11 +149,16 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
 	}
 
 	public void onReceiveResult(int resultCode, Bundle resultData) {
-		switch (resultCode) {
-		case GetFiresService.SERVICE_SCANEXSTART:
+		
+		if((resultCode & GetFiresService.SERVICE_START) !=0 ){
+			((MainActivity)getSherlockActivity()).refresh();			
+		}
+
+		if((resultCode & GetFiresService.SERVICE_SCANEXSTART) !=0 ){
 			((MainActivity)getSherlockActivity()).refresh();
-			break;
-		case GetFiresService.SERVICE_SCANEXDATA:
+		}
+		
+		if((resultCode & GetFiresService.SERVICE_SCANEXDATA) !=0 ){
 			ScanexSubscibesFragment ListFragment = (ScanexSubscibesFragment) getChildFragmentManager().findFragmentByTag("LIST");
 			if(ListFragment != null){				
 				int nType = resultData.getInt(GetFiresService.TYPE);
@@ -171,15 +176,16 @@ public class ScanexDataFragment extends SherlockFragment implements FiresResultR
 						NotesFragment.add(item);
 					}
 				}
-			}
-			break;
-		case GetFiresService.SERVICE_STOP:
-			((MainActivity)getSherlockActivity()).completeRefresh();
-			break;
-		case GetFiresService.SERVICE_ERROR:
-			Toast.makeText(getSherlockActivity(), resultData.getString(GetFiresService.ERR_MSG), Toast.LENGTH_LONG).show();
-			break;
-		}		
+			}			
+		}
+		
+		if((resultCode & GetFiresService.SERVICE_STOP) !=0 ){
+			((MainActivity)getSherlockActivity()).completeRefresh();			
+		}
+		
+		if((resultCode & GetFiresService.SERVICE_ERROR) !=0 ){
+			Toast.makeText(getSherlockActivity(), resultData.getString(GetFiresService.ERR_MSG), Toast.LENGTH_LONG).show();			
+		}				
 	}
 	
 	protected void StartService(){

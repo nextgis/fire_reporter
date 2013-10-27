@@ -281,6 +281,13 @@ public class MainActivity extends SherlockFragmentActivity{
 //		StopService();
 		super.onDestroy();
 	}
+
+	@Override
+	protected void onPause() {
+		if(mbRefreshing)
+			completeRefresh();
+		super.onPause();
+	}
 }
 
 

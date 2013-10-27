@@ -23,6 +23,8 @@
 *******************************************************************************/
 package com.nextgis.firereporter;
 
+import java.util.Collections;
+
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -37,6 +39,7 @@ import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuItem;
+import com.nextgis.firereporter.FiresDataFragment.FireItemComparator;
 
 public class ScanexNotificationsActivity  extends SherlockFragmentActivity implements FiresResultReceiver.Receiver {
 	protected FiresResultReceiver mReceiver;
@@ -163,11 +166,11 @@ public class ScanexNotificationsActivity  extends SherlockFragmentActivity imple
 	}
 	
 	public void onReceiveResult(int resultCode, Bundle resultData) {
-		switch (resultCode) {
-		case GetFiresService.SERVICE_SCANEXSTART:
-			refresh();
-			break;
-		case GetFiresService.SERVICE_SCANEXDATA:
+		if((resultCode & GetFiresService.SERVICE_SCANEXSTART) !=0 ){
+			refresh();			
+		}
+
+		if((resultCode & GetFiresService.SERVICE_SCANEXDATA) !=0 ){
 			ScanexNotificationsFragment NotesFragment = (ScanexNotificationsFragment) getSupportFragmentManager().findFragmentByTag("DETAILES");
 			if(NotesFragment != null){				
 				int nType = resultData.getInt(GetFiresService.TYPE);
@@ -178,14 +181,15 @@ public class ScanexNotificationsActivity  extends SherlockFragmentActivity imple
 					mNotesFragment.add(item);
 				}
 			}
-			break;
-		case GetFiresService.SERVICE_STOP:
+		}
+
+		if((resultCode & GetFiresService.SERVICE_STOP) !=0 ){
 			completeRefresh();
-			break;
-		case GetFiresService.SERVICE_ERROR:
+		}
+		
+		if((resultCode & GetFiresService.SERVICE_ERROR) !=0 ){
 			Toast.makeText(this, resultData.getString(GetFiresService.ERR_MSG), Toast.LENGTH_LONG).show();
-			break;
-		}		
+		}
 	}
 	
 	protected void StartService(){

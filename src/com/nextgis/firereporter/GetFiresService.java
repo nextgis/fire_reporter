@@ -81,16 +81,16 @@ public class GetFiresService extends Service {
     private Map<Long, FireItem> mmoFires; 
     private String msScanexLoginCookie;
     
-	public final static int SERVICE_START = 1;
-	public final static int SERVICE_STOP = 2;
-	public final static int SERVICE_ERROR = 3;
-	public final static int SERVICE_DATA = 4;
-	public final static int SERVICE_DESTROY = 5;
-	public final static int SERVICE_UPDATE = 6;
-	public final static int SERVICE_SCANEXSTART = 7;
-	public final static int SERVICE_SCANEXDATA = 8;
-	public final static int SERVICE_SCANEXDATAUPDATE = 9;
-	public final static int SERVICE_NOTIFY_DISMISSED = 10;
+	public final static int SERVICE_START	= 1 << 0; // 1
+	public final static int SERVICE_STOP	= 1 << 1; // 2
+	public final static int SERVICE_ERROR	= 1 << 2; // 4
+	public final static int SERVICE_DATA	= 1 << 3; // 8
+	public final static int SERVICE_DESTROY	= 1 << 4; // 16
+	public final static int SERVICE_UPDATE	= 1 << 5; // 32
+	public final static int SERVICE_SCANEXSTART	= 1 << 6; // 64
+	public final static int SERVICE_SCANEXDATA	= 1 << 7; // 128
+	public final static int SERVICE_SCANEXDATAUPDATE	= 1 << 8; // 256
+	public final static int SERVICE_NOTIFY_DISMISSED	= 1 << 9; // 512
 
 	public final static int SCANEX_SUBSCRIPTION = 1;
 	public final static int SCANEX_NOTIFICATION = 2;
@@ -117,6 +117,8 @@ public class GetFiresService extends Service {
 
 	
 	private Map<Long, ScanexSubscriptionItem> mmoSubscriptions;
+	
+	protected boolean mbHasChanges;
 
     
 	@Override
@@ -137,7 +139,7 @@ public class GetFiresService extends Service {
 		super.onStartCommand(intent, flags, startId);
 
 		if(intent == null)
-			return START_STICKY;
+			return START_REDELIVER_INTENT;
 		
 		int nCommnad = intent.getIntExtra(COMMAND, SERVICE_START);
 		
@@ -147,68 +149,68 @@ public class GetFiresService extends Service {
 		
 		Log.d(MainActivity.TAG, "Received intent - id " + startId + ": " + intent + ", command:" + nCommnad);
 		
-		switch(nCommnad){
-		case SERVICE_START:
-			mnFilter = intent.getIntExtra(SOURCE, MainActivity.SRC_NASA | MainActivity.SRC_USER);
-			mUserNasaReceiver = intent.getParcelableExtra(RECEIVER);		
-
-			if(mnCurrentExec < 1){
-				mUserNasaReceiver.send(SERVICE_START, new Bundle());
+		if((nCommnad & SERVICE_START) !=0 ){
+			mUserNasaReceiver = intent.getParcelableExtra(RECEIVER);
+			if(mUserNasaReceiver != null){
+				mnFilter = intent.getIntExtra(SOURCE, MainActivity.SRC_NASA | MainActivity.SRC_USER);
+	
+				if(mnCurrentExec < 1){
+					mUserNasaReceiver.send(SERVICE_START, new Bundle());
+				}
+				Log.d(MainActivity.TAG, "GetFiresService service started");
+				if((mnFilter & MainActivity.SRC_NASA) !=0 ){
+					mnCurrentExec++;
+					GetNasaData(false);
+				}
+	
+				if((mnFilter & MainActivity.SRC_USER) !=0 ){
+					mnCurrentExec++;
+					GetUserData(false);
+				}
 			}
-			Log.d(MainActivity.TAG, "GetFiresService service started");
-			if((mnFilter & MainActivity.SRC_NASA) !=0 ){
-				mnCurrentExec++;
-				GetNasaData(false);
-			}
-
-			if((mnFilter & MainActivity.SRC_USER) !=0 ){
-				mnCurrentExec++;
-				GetUserData(false);
-			}
-			
 			// plan next start
-			ScheduleNextUpdate(this, nCommnad, nUpdateInterval, bEnergyEconomy);
-			break;
-		case SERVICE_SCANEXSTART:
-			
+			ScheduleNextUpdate(this, SERVICE_START | SERVICE_SCANEXSTART, nUpdateInterval, bEnergyEconomy);			
+		}
+		
+		if((nCommnad & SERVICE_SCANEXSTART) !=0){
 			mScanexReceiver = intent.getParcelableExtra(RECEIVER_SCANEX);		
-
-			if(mnCurrentExec < 1){
-				mScanexReceiver.send(SERVICE_SCANEXSTART, new Bundle());
-			}
-			Log.d(MainActivity.TAG, "GetFiresService service started");
-			GetScanexData(false);
-			
+			if(mScanexReceiver != null){			
+				if(mnCurrentExec < 1){
+					mScanexReceiver.send(SERVICE_SCANEXSTART, new Bundle());
+				}
+				Log.d(MainActivity.TAG, "GetFiresService service started");
+				GetScanexData(false);
+			}			
 			// plan next start
-			ScheduleNextUpdate(this, nCommnad, nUpdateInterval, bEnergyEconomy);
-			break;
+			ScheduleNextUpdate(this, SERVICE_START | SERVICE_SCANEXSTART, nUpdateInterval, bEnergyEconomy);
 			
-		case SERVICE_STOP:
+		}
+		
+		if((nCommnad & SERVICE_STOP) !=0){
 			Log.d(MainActivity.TAG, "GetFiresService service stopped");
 			ScheduleNextUpdate(this, SERVICE_DESTROY, 150, true);
 			stopSelf();
-			break;
-		case SERVICE_DESTROY:
+		}
+		
+		if((nCommnad & SERVICE_DESTROY) !=0){
 			stopSelf();
-			break;
-		case SERVICE_UPDATE:
-			mUserNasaReceiver = intent.getParcelableExtra(RECEIVER);		
-			mScanexReceiver = intent.getParcelableExtra(RECEIVER_SCANEX);		
-			break;
-		case SERVICE_DATA:
+		}		
+		
+		if((nCommnad & SERVICE_DATA) !=0){
 			mUserNasaReceiver = intent.getParcelableExtra(RECEIVER);		
 			for(FireItem item : mmoFires.values()){
 				SendItem(item);
 			}
-			break;
-		case SERVICE_SCANEXDATA:
+		}		
+
+		if((nCommnad & SERVICE_SCANEXDATA) !=0){
 			mScanexReceiver = intent.getParcelableExtra(RECEIVER_SCANEX);		
 			for(ScanexSubscriptionItem Item : mmoSubscriptions.values()){
 				SendScanexItem(Item);
 			}
+		}		
 
-			break;
-		case SERVICE_SCANEXDATAUPDATE:
+		if((nCommnad & SERVICE_SCANEXDATAUPDATE) !=0){
 			long nSubscirbeId = intent.getLongExtra(SUBSCRIPTION_ID, -1);
 			long nNotificationId = intent.getLongExtra(NOTIFICATION_ID, -1);
 			ScanexSubscriptionItem subscribe = mmoSubscriptions.get(nSubscirbeId);
@@ -218,8 +220,9 @@ public class GetFiresService extends Service {
 					notification.setWatched(true);
 				}
 			}
-			break;
-		case SERVICE_NOTIFY_DISMISSED:
+		}
+		
+		if((nCommnad & SERVICE_NOTIFY_DISMISSED) !=0){
 			nUserCount = 0;
 			nNasaCount = 0; 
 			nScanexCount = 0;
@@ -227,10 +230,10 @@ public class GetFiresService extends Service {
 			mInboxStyle = new NotificationCompat.InboxStyle();
 			mInboxStyle.setBigContentTitle(getString(R.string.stNewFireNotificationDetailes));
 
-			break;
+			ScheduleNextUpdate(this, SERVICE_START | SERVICE_SCANEXSTART, nUpdateInterval, bEnergyEconomy);
 		}
 		
-        return START_STICKY;
+		return START_REDELIVER_INTENT;
 	}
     
 	protected void Prepare(){
@@ -258,7 +261,7 @@ public class GetFiresService extends Service {
 		
 		Intent delIntent = new Intent(this, GetFiresService.class);	
 		delIntent.putExtra(COMMAND, SERVICE_NOTIFY_DISMISSED);
-		PendingIntent deletePendingIntent = PendingIntent.getService(this, 0, delIntent, 0);
+		PendingIntent deletePendingIntent = PendingIntent.getService(this, 0, delIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		mBuilder.setDeleteIntent(deletePendingIntent);
 		
 		mInboxStyle = new NotificationCompat.InboxStyle();
@@ -499,7 +502,9 @@ public class GetFiresService extends Service {
 						
 						ScanexSubscriptionItem Item = new ScanexSubscriptionItem(this, nID, sTitle, sLayerName, sWKT, bSMSEnable);
 						mmoSubscriptions.put(nID, Item);
-						SendScanexItem(Item);						
+						SendScanexItem(Item);			
+						
+						mbHasChanges = true;
 					}
 
 					mmoSubscriptions.get(nID).UpdateFromRemote(msScanexLoginCookie);
@@ -576,8 +581,6 @@ public class GetFiresService extends Service {
 	}	
 	
 	protected void GetScanexData(boolean bShowProgress){
-		if(mmoSubscriptions.size() > 0)
-			StoreScanexData();
 		//2 hours = 120 min = 7200 sec = 7200000
 		Time testTime = new Time();
 		testTime.setToNow();
@@ -595,6 +598,9 @@ public class GetFiresService extends Service {
 		//5. send updates to client
 		mnCurrentExec++;
         new HttpGetter(this, 3, getResources().getString(R.string.stDownLoading), mFillDataHandler, bShowProgress).execute(SCANEX_API + "/Subscribe/Get/?CallBackName=" + USER_ID, msScanexLoginCookie);
+
+        if(mmoSubscriptions.size() > 0)
+			StoreScanexData();
 	}
 	
 	public static String removeJsonT(String sData){
@@ -669,12 +675,16 @@ public class GetFiresService extends Service {
 				}
 			}
 			
+			mbHasChanges = true;
+			
 		} catch (JSONException e) {
 			SendError( e.getLocalizedMessage() );
 		}
 	}
 	
 	protected void StoreScanexData(){
+		if(mbHasChanges == false)
+			return;
 		try {
 			JSONObject oJSONRoot = new JSONObject();
 			JSONArray oJSONSubscriptions = new JSONArray();
@@ -685,6 +695,7 @@ public class GetFiresService extends Service {
 			
 			File file = new File(getExternalFilesDir(null), SCANEX_FILE);
 			writeToFile(file, oJSONRoot.toString());
+			mbHasChanges = false;
 			
 		} catch (JSONException e) {
 			SendError( e.getLocalizedMessage() );
@@ -704,6 +715,7 @@ public class GetFiresService extends Service {
 		b.putParcelable(ITEM, item);
 		mScanexReceiver.send(SERVICE_SCANEXDATA, b);
 		
+		mbHasChanges = true;
 	}
 	
 	protected void onNotify(int nType, String sMsg){
